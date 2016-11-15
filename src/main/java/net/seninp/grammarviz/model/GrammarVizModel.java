@@ -331,7 +331,7 @@ public class GrammarVizModel extends Observable {
           for(int i = 0; i < this.ts.length; i++) {
             if (useSlidingWindow) {
               if(useGlobalNormalization) {
-                saxFrequencyDataArray[i] = sp.ts2saxViaWindowGlobalNormalization(ts[i], windowSize, paaSize, na.getCuts(alphabetSize),
+                saxFrequencyDataArray[i] = sp.ts2saxViaWindowGlobalZNorm(ts[i], windowSize, paaSize, na.getCuts(alphabetSize),
                     numerosityReductionStrategy, normalizationThreshold);
               } else {
                 saxFrequencyDataArray[i] = sp.ts2saxViaWindow(ts[i], windowSize, paaSize, na.getCuts(alphabetSize),

@@ -299,16 +299,35 @@
       <artifactId>hierarchical-clustering</artifactId>
       <version>1.1.0</version>
     </dependency>
-
+    <dependency>
+      <groupId>nz.ac.waikato.cms.weka</groupId>
+      <artifactId>weka-stable</artifactId>
+      <version>3.6.6</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.1</version>
+    </dependency>
+      <dependency>
+          <groupId>com.github.jMotif</groupId>
+          <artifactId>sax-vsm_classic</artifactId>
+          <version>ebd3ab8bf0cbd03d342b12bbabfea0ec4e886b67</version>
+      </dependency>
+      <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+          <version>1.1.7</version>
+      </dependency>
     <dependency>
       <groupId>net.seninp</groupId>
       <artifactId>jmotif-sax</artifactId>
-      <version>1.0.8</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>net.seninp</groupId>
       <artifactId>jmotif-gi</artifactId>
-      <version>0.9.1</version>
+      <version>1.0.0</version>
     </dependency>
   </dependencies>
 
