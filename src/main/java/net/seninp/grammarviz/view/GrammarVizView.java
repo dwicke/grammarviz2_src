@@ -71,10 +71,16 @@ public class GrammarVizView implements Observer, ActionListener {
   protected static final String SELECT_FILE = "select_file";
   /** Load data action key. */
   protected static final String LOAD_DATA = "load_data";
+  /** Load RPM model action key. */
+  protected static final String LOAD_MODEL = "load_model";
   /** Guess parameters action key. */
   protected static final String GUESS_PARAMETERS = "guess_parameters";
   /** Process data action key. */
   protected static final String PROCESS_DATA = "process_data";
+  /** Train model action key. */
+  protected static final String TRAIN_MODEL = "train_model";
+  /** Test model action key. */
+  protected static final String TEST_MODEL = "test_model";
   /** Reduce overlaps data action key. */
   protected static final String CLUSTER_RULES = "cluster_rules";
   /** Rank rules action key. */
@@ -91,6 +97,8 @@ public class GrammarVizView implements Observer, ActionListener {
   protected static final String DISPLAY_ANOMALIES_DATA = "display_anomalies_data";
   /** Save chart action key. */
   protected static final String SAVE_CHART = "save_chart";
+  /** Save model action key. */
+  protected static final String SAVE_MODEL = "save_model";
 
   protected static final String RESET_GUESS_BUTTON_LISTENER = "reset_guess_button_listener";
 
@@ -105,6 +113,7 @@ public class GrammarVizView implements Observer, ActionListener {
 
   /** The action command for About dialog. */
   private static final String ABOUT_MENU_ITEM = "menu_item_about";
+
 
   /** Frame for the GUI. */
   private static final JFrame frame = new JFrame(APPLICATION_MOTTO);
@@ -122,6 +131,7 @@ public class GrammarVizView implements Observer, ActionListener {
   private JButton selectFileButton;
   private JTextField dataRowsLimitTextField;
   private JButton dataLoadButton;
+  private JButton modelLoadButton;
 
   // SAX parameters related fields
   //
@@ -148,6 +158,9 @@ public class GrammarVizView implements Observer, ActionListener {
   //
   private JPanel discretizePane;
   private JButton discretizeButton;
+  private JPanel trainPane;
+  private JButton trainButton;
+  private JButton testButton;
 
   // data charting panel
   //
@@ -176,8 +189,10 @@ public class GrammarVizView implements Observer, ActionListener {
   private JButton displayRulesLenHistogramButton;
   private JButton findAnomaliesButton;
   private JButton saveChartButton;
+  private JButton saveModelButton;
 
   private boolean isTimeSeriesLoaded = false;
+  private boolean isModeRPM = false;
 
   // logging area
   //
@@ -293,7 +308,8 @@ public class GrammarVizView implements Observer, ActionListener {
 
     frame.getContentPane().add(saxParametersPane, "grow, split");
     frame.getContentPane().add(numerosityReductionPane, "split");
-    frame.getContentPane().add(discretizePane, "wrap");
+    frame.getContentPane().add(discretizePane, "");
+    frame.getContentPane().add(trainPane, "wrap");
 
     frame.getContentPane().add(dataChartPane, "wrap");
 
@@ -399,7 +415,7 @@ public class GrammarVizView implements Observer, ActionListener {
     fileNameLabel.setLabelFor(dataFilePathField);
 
     // the Browse button
-    selectFileButton = new JButton("Browse...");
+    selectFileButton = new JButton("Browse");
     selectFileButton.setMnemonic('B');
 
     dataSourcePane.add(fileNameLabel, "");
@@ -427,6 +443,11 @@ public class GrammarVizView implements Observer, ActionListener {
     dataLoadButton.addActionListener(this);
     dataSourcePane.add(dataLoadButton, "");
 
+    // Button to load previously computed RPM models
+    modelLoadButton = new JButton("Load model");
+    modelLoadButton.setActionCommand(LOAD_MODEL);
+    modelLoadButton.addActionListener(this);
+    dataSourcePane.add(modelLoadButton, "");
   }
 
   /**
@@ -436,7 +457,7 @@ public class GrammarVizView implements Observer, ActionListener {
 
     saxParametersPane = new JPanel();
     saxParametersPane.setBorder(BorderFactory.createTitledBorder(
-        BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "SAX parameteres", TitledBorder.LEFT,
+        BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "SAX parameters", TitledBorder.LEFT,
         TitledBorder.CENTER, new Font(TITLE_FONT, Font.PLAIN, 10)));
 
     // insets: T, L, B, R.
@@ -451,7 +472,7 @@ public class GrammarVizView implements Observer, ActionListener {
 
     // the sliding window parameter
     // JLabel slideWindowLabel = new JLabel("Slide the window");
-    useSlidingWindowCheckBox = new JCheckBox("Slide the window");
+    useSlidingWindowCheckBox = new JCheckBox("Slide window");
     useSlidingWindowCheckBox.setSelected(this.controller.getSession().useSlidingWindow);
     useSlidingWindowCheckBox.setActionCommand(USE_SLIDING_WINDOW_ACTION_KEY);
     useSlidingWindowCheckBox.addActionListener(this);
@@ -462,23 +483,18 @@ public class GrammarVizView implements Observer, ActionListener {
     useGlobalNormalizationCheckBox.setActionCommand(USE_GLOBAL_NORMALIZATION_ACTION);
     useGlobalNormalizationCheckBox.addActionListener(this);
 
-    windowSizeLabel = new JLabel("Window size:");
+    windowSizeLabel = new JLabel("Window:");
     SAXwindowSizeField = new JTextField(String.valueOf(this.controller.getSession().saxWindow),2);
     SAXwindowSizeField.setMinimumSize(SAXwindowSizeField.getPreferredSize());
 
-    paaSizeLabel = new JLabel("  PAA size:");
+    paaSizeLabel = new JLabel("  PAA:");
     SAXpaaSizeField = new JTextField(String.valueOf(this.controller.getSession().saxPAA));
     SAXpaaSizeField.setMinimumSize(SAXpaaSizeField.getPreferredSize());
 
-    JLabel alphabetSizeLabel = new JLabel("  Alphabet size:");
+    JLabel alphabetSizeLabel = new JLabel("  Alphabet:");
     SAXalphabetSizeField = new JTextField(String.valueOf(this.controller.getSession().saxAlphabet));
     SAXalphabetSizeField.setMinimumSize(SAXalphabetSizeField.getPreferredSize());
 
-    // saxParametersPane.add(slideWindowLabel);
-    saxParametersPane.add(useSlidingWindowCheckBox);
-
-    // saxParametersPane.add(globalNormalizatonLabel);
-    saxParametersPane.add(useGlobalNormalizationCheckBox);
 
     saxParametersPane.add(windowSizeLabel);
     saxParametersPane.add(SAXwindowSizeField);
@@ -494,6 +510,12 @@ public class GrammarVizView implements Observer, ActionListener {
     guessParametersButton.setActionCommand(GUESS_PARAMETERS);
     guessParametersButton.addActionListener(this);
     saxParametersPane.add(guessParametersButton, "");
+
+    // saxParametersPane.add(slideWindowLabel);
+    saxParametersPane.add(useSlidingWindowCheckBox);
+
+    // saxParametersPane.add(globalNormalizatonLabel);
+    saxParametersPane.add(useGlobalNormalizationCheckBox);
 
     // numerosity reduction pane
     //
@@ -527,20 +549,40 @@ public class GrammarVizView implements Observer, ActionListener {
 
     // PROCESS button
     //
-    discretizeButton = new JButton("Discretize");
+    discretizeButton = new JButton("Discretize"); // Obviously changed from process at some point
     discretizeButton.setMnemonic('P');
     discretizeButton.setActionCommand(PROCESS_DATA);
     discretizeButton.addActionListener(this);
 
     discretizePane = new JPanel();
     discretizePane.setBorder(BorderFactory.createTitledBorder(
-        BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "Hit to run GI", TitledBorder.LEFT,
+        BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "Run GI", TitledBorder.LEFT,
         TitledBorder.CENTER, new Font(TITLE_FONT, Font.PLAIN, 10)));
     // insets: T, L, B, R.
     MigLayout processPaneLayout = new MigLayout("insets 3 2 4 2", "5[]5", "[]");
     discretizePane.setLayout(processPaneLayout);
     discretizePane.add(discretizeButton, "");
 
+
+    //  RPM train button and test buttons
+    trainButton = new JButton("Train");
+    trainButton.setMnemonic('R');
+    trainButton.setActionCommand(TRAIN_MODEL);
+    trainButton.addActionListener(this);
+    testButton = new JButton("Test");
+    testButton.setMnemonic('e');
+    testButton.setActionCommand(TEST_MODEL);
+    testButton.addActionListener(this);
+
+    trainPane = new JPanel();
+    trainPane.setBorder(BorderFactory.createTitledBorder(
+        BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "Run RPM", TitledBorder.LEFT,
+        TitledBorder.CENTER, new Font(TITLE_FONT, Font.PLAIN, 10)));
+    // insets: T, L, B, R.
+    processPaneLayout = new MigLayout("insets 3 2 4 2", "5[]5", "[]");
+    trainPane.setLayout(processPaneLayout);
+    trainPane.add(trainButton, "");
+    trainPane.add(testButton, "");
   }
 
   private void buildChartPane() {
@@ -666,10 +708,15 @@ public class GrammarVizView implements Observer, ActionListener {
     findAnomaliesButton.setActionCommand(DISPLAY_ANOMALIES_DATA);
     findAnomaliesButton.addActionListener(this);
 
-    saveChartButton = new JButton("Save Chart");
+    saveChartButton = new JButton("Save chart");
     saveChartButton.setMnemonic('S');
     saveChartButton.setActionCommand(SAVE_CHART);
     saveChartButton.addActionListener(this);
+
+    saveModelButton = new JButton("Save model");
+    saveModelButton.setMnemonic('m');
+    saveModelButton.setActionCommand(SAVE_MODEL);
+    saveModelButton.addActionListener(this);
 
     // workflowManagementPane.add(processButton);
     workflowManagementPane.add(displayChartButton);
@@ -679,7 +726,7 @@ public class GrammarVizView implements Observer, ActionListener {
     workflowManagementPane.add(displayRulesDensityButton);
     workflowManagementPane.add(findAnomaliesButton);
     workflowManagementPane.add(saveChartButton);
-
+    workflowManagementPane.add(saveModelButton);
   }
 
   /**
@@ -744,6 +791,7 @@ public class GrammarVizView implements Observer, ActionListener {
             dataFilePathField.repaint();
             disableAllExceptSelectButton();
             dataLoadButton.setEnabled(true);
+            modelLoadButton.setEnabled(true);
           }
         };
         SwingUtilities.invokeLater(doSetPath);
@@ -766,9 +814,10 @@ public class GrammarVizView implements Observer, ActionListener {
             frame.repaint();
             disableAllExceptSelectButton();
             dataLoadButton.setEnabled(true);
+            modelLoadButton.setEnabled(true);
             guessParametersButton.setEnabled(true);
             discretizeButton.setEnabled(true);
-            discretizeButton.setEnabled(true);
+            trainButton.setEnabled(true);
           }
         };
         SwingUtilities.invokeLater(clearPanels);
@@ -844,6 +893,26 @@ public class GrammarVizView implements Observer, ActionListener {
     if (SELECT_FILE.equalsIgnoreCase(command)) {
       log(Level.INFO, "select file action performed");
       controller.getBrowseFilesListener().actionPerformed(null);
+    }
+
+    if (LOAD_MODEL.equals(command)) {
+      log(Level.INFO, "load model action performed");
+      JOptionPane.showMessageDialog(null, "Implement me");
+    }
+
+    if (TRAIN_MODEL.equals(command)) {
+      log(Level.INFO, "train model action performed");
+      JOptionPane.showMessageDialog(null, "Implement me");
+    }
+
+    if (TEST_MODEL.equals(command)) {
+      log(Level.INFO, "test model action performed");
+      JOptionPane.showMessageDialog(null, "Implement me");
+    }
+
+    if (SAVE_MODEL.equals(command)) {
+      log(Level.INFO, "save model action performed");
+      JOptionPane.showMessageDialog(null, "Implement me");
     }
 
     if (LOAD_DATA.equalsIgnoreCase(command)) {
@@ -950,6 +1019,7 @@ public class GrammarVizView implements Observer, ActionListener {
       log(Level.INFO, "starting the guessing params dialog");
       disableAllExceptSelectButton();
       this.dataLoadButton.setEnabled(true);
+      this.modelLoadButton.setEnabled(true);
       this.guessParametersButton.setEnabled(true);
       this.guessParametersButton.removeActionListener(this);
       this.dataChartPane.actionPerformed(new ActionEvent(this, 2, GUESS_PARAMETERS));
@@ -967,6 +1037,7 @@ public class GrammarVizView implements Observer, ActionListener {
       this.guessParametersButton.setText("Guess");
       this.guessParametersButton.addActionListener(this);
       this.discretizeButton.setEnabled(true);
+      this.trainButton.setEnabled(true);
     }
 
     else if (FIND_PERIODICITY.equalsIgnoreCase(command)) {
@@ -1111,8 +1182,11 @@ public class GrammarVizView implements Observer, ActionListener {
 
   private void disableAllExceptSelectButton() {
     this.dataLoadButton.setEnabled(false);
+    this.modelLoadButton.setEnabled(false);
     this.guessParametersButton.setEnabled(false);
     this.discretizeButton.setEnabled(false);
+    this.trainButton.setEnabled(false);
+    this.testButton.setEnabled(false);
     this.findAnomaliesButton.setEnabled(false);
     this.displayChartButton.setEnabled(false);
     this.clusterRulesButton.setEnabled(false);
@@ -1120,12 +1194,15 @@ public class GrammarVizView implements Observer, ActionListener {
     this.displayRulesDensityButton.setEnabled(false);
     this.displayRulesLenHistogramButton.setEnabled(false);
     this.saveChartButton.setEnabled(false);
+    this.saveModelButton.setEnabled(false);
   }
 
   private void enableAllButtons() {
     this.dataLoadButton.setEnabled(true);
+    this.modelLoadButton.setEnabled(true);
     this.guessParametersButton.setEnabled(true);
     this.discretizeButton.setEnabled(true);
+    this.trainButton.setEnabled(false);
     this.findAnomaliesButton.setEnabled(true);
     this.displayChartButton.setEnabled(true);
     this.clusterRulesButton.setEnabled(true);
