@@ -2,6 +2,7 @@ package edu.gmu.grammar.patterns;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Arrays;
 
 public class TSPattern implements Cloneable, Comparable<TSPattern> {
 
@@ -133,5 +134,17 @@ public class TSPattern implements Cloneable, Comparable<TSPattern> {
 			return -1;
 		} else
 			return 0;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder output = new StringBuilder();
+		output.append("Label: " + this.label + "\n");
+		output.append("Patterns in class (" + this.patternsInClass.size() + "):\n");
+		for(int i = 0; i < this.patternsInClass.size(); i++) {
+			output.append(Arrays.toString(this.patternsInClass.get(i)) + "\n");
+		}
+
+		return output.toString();
 	}
 }

@@ -15,7 +15,9 @@ import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 import net.seninp.util.StackTrace;
 import org.slf4j.LoggerFactory;
 
+import javax.print.attribute.standard.PDLOverrideSupported;
 import java.io.IOException;
+//import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -99,12 +101,14 @@ public class PSDirectTransformAllClass {
 
 	private static String TRAINING_DATA_PATH;
 	private static String TEST_DATA_PATH;
-	private static int ITERATIONS_NUM = 5;
+	private static int iterations_num; // 5
 	private static int FOLDERNUM;
 	private static double rpFrequencyTPer;
 	private static int maxRPNum;
 	private static double overlapTPer;
 	private static Boolean isCoverageFre;
+	private static Boolean parmSet = false;
+	private static RPMTrainedData currentTrainedData;
 
 	private static Map<String, List<double[]>> trainData;
 	private static Map<String, List<double[]>> testData;
@@ -249,6 +253,150 @@ public class PSDirectTransformAllClass {
 		return defaultParam;
 	}
 
+	private static void loadTrainingData(String trainingDataFilePath) throws IOException {
+		TRAINING_DATA_PATH = trainingDataFilePath;
+		trainData = UCRUtils.readUCRData(TRAINING_DATA_PATH);
+	}
+
+	private static RPMTrainedData RPMTrainPrivate(String dataName,
+												  String strategy,
+												  int lowerWindow, int upperWindow,
+												  int lowerPaa, int upperPaa,
+												  int lowerAlphabet, int upperAlphabet,
+												  int iterations) {
+		RPMTrainedData rpmTrainedOutput = new RPMTrainedData();
+		rpmTrainedOutput.training_data_path = TRAINING_DATA_PATH;
+		rpmTrainedOutput.trainData = trainData;
+		rpmTrainedOutput.allStrategy = strategy;
+		allStrategy = NumerosityReductionStrategy.valueOf(strategy);
+
+		//String dataName = Paths.get(trainingDataFilePath).getFileName().toString();
+
+		// window size, PAA size, alphabet size.
+		rpmTrainedOutput.lowerBounds = lowerBounds = new int[] {lowerWindow, lowerPaa, lowerAlphabet};
+		rpmTrainedOutput.upperBounds = upperBounds = new int[] {upperWindow, upperPaa, upperAlphabet};
+
+		rpmTrainedOutput.folderNum = FOLDERNUM = 5;
+		rpmTrainedOutput.rpFrequencyTPer = rpFrequencyTPer = 0.2;
+		rpmTrainedOutput.maxRPNum = maxRPNum = 50;
+		rpmTrainedOutput.overlapTPer = overlapTPer = 0.5;
+		rpmTrainedOutput.isCoverageFre = isCoverageFre = true;
+		rpmTrainedOutput.pSimilarity = 0.02;
+		pSimilarity = new PatternsSimilarity(0.02);
+
+		rpmTrainedOutput.iterations_num = iterations_num = iterations; // Default 5
+
+		consoleLogger.info("running sampling for " + giMethod
+			+ " with " + allStrategy.toString() + " strategy...");
+
+		rpmTrainedOutput.bestSelectedPatternsAllClass =  sample(allStrategy, dataName);
+
+		currentTrainedData = rpmTrainedOutput;
+
+		int[] bestParams =  rpmTrainedOutput.bestSelectedPatternsAllClass[0].getBestParams();
+		rpmTrainedOutput.windowSize = bestParams[0];
+		rpmTrainedOutput.paa = bestParams[1];
+		rpmTrainedOutput.alphabet = bestParams[2];
+
+		return rpmTrainedOutput;
+	}
+
+	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath) throws IOException {
+		return PSDirectTransformAllClass.RPMTrain(dataName, trainingDataFilePath,
+				// Default Strategy
+				"EXACT");
+	}
+
+	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
+										  String strategy) throws IOException {
+		return PSDirectTransformAllClass.RPMTrain(dataName, trainingDataFilePath, strategy,
+				// Default Number of Iterations
+				5);
+	}
+	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
+										  String strategy,
+										  int iterations) throws IOException {
+
+		PSDirectTransformAllClass.loadTrainingData(trainingDataFilePath);
+
+		// lower bound.
+		double lper = 0.1;
+		// upper bound.
+		double uper = 0.9;
+
+		// Upper and lower bound of sliding window size.
+		int tsLen = trainData.entrySet().iterator().next().getValue().get(0).length;
+		int lWLen = (int) (tsLen * lper);
+		int lb = lWLen > 1 ? lWLen : 1;
+		int uWLen = (int) (tsLen * uper);
+		int ub = uWLen > 1 ? uWLen : 1;
+
+		return PSDirectTransformAllClass.RPMTrainPrivate(dataName, strategy,
+				// Lower & Upper Window Default
+				lb, ub,
+				// Lower & Upper PAA Default
+				2, 20,
+				// Lower & Upper Alphabet Default
+				2, 20,
+				iterations);
+	}
+
+	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
+										  String strategy,
+										  int lowerWindow, int upperWindow,
+										  int lowerPaa, int upperPaa,
+										  int lowerAlphabet, int upperAlphabet,
+										  int iterations) throws IOException {
+
+		PSDirectTransformAllClass.loadTrainingData(trainingDataFilePath);
+
+		return PSDirectTransformAllClass.RPMTrainPrivate(dataName, strategy,
+				lowerWindow, upperWindow,
+				lowerPaa, upperPaa,
+				lowerAlphabet, upperAlphabet,
+				iterations);
+
+	}
+
+	public static void loadRPMTrain(RPMTrainedData trainedData) {
+		TRAINING_DATA_PATH = trainedData.training_data_path;
+		trainData = trainedData.trainData;
+		allStrategy = NumerosityReductionStrategy.valueOf(trainedData.allStrategy);
+
+		// window size, PAA size, alphabet size.
+		lowerBounds = trainedData.lowerBounds;
+		upperBounds = trainedData.upperBounds;
+
+		FOLDERNUM = trainedData.folderNum;
+		rpFrequencyTPer = trainedData.rpFrequencyTPer;
+		maxRPNum = trainedData.maxRPNum;
+		overlapTPer = trainedData.overlapTPer;
+		isCoverageFre = trainedData.isCoverageFre;
+		pSimilarity = new PatternsSimilarity(trainedData.pSimilarity);
+
+		iterations_num = trainedData.iterations_num; // Default 5
+
+		consoleLogger.info("loading sample for " + giMethod
+				+ " with " + allStrategy.toString() + " strategy...");
+
+		bestSelectedPatternsAllClass =  trainedData.bestSelectedPatternsAllClass;
+
+		currentTrainedData = trainedData;
+	}
+
+	public static ClassificationResults RPMTestData(String dataName, String testingDataFilePath) throws IOException {
+		ClassificationResults results = new ClassificationResults();
+		results.testDataPath = TEST_DATA_PATH = testingDataFilePath;
+		results.testData = testData = UCRUtils.readUCRData(TEST_DATA_PATH);
+
+		classifyWithTransformedDataAllCls(dataName,
+				bestSelectedPatternsAllClass);
+		int tsLen = trainData.entrySet().iterator().next().getValue().get(0).length;
+		DataProcessor.writeDIRECTNumToFile(directTime, tsLen);
+
+		return results;
+	}
+
 	public static void runProgram(String[] initialParam, String dataName) {
 		try {
 			if (14 == initialParam.length) {
@@ -274,6 +422,8 @@ public class PSDirectTransformAllClass {
 				overlapTPer = Double.valueOf(initialParam[11]);
 				isCoverageFre = Boolean.valueOf(initialParam[12]);				
 				pSimilarity = new PatternsSimilarity(Double.valueOf(initialParam[13]));
+
+				iterations_num = 5;
 
 				consoleLogger.info("processing paramleters: "
 						+ Arrays.toString(initialParam));
@@ -469,7 +619,7 @@ public class PSDirectTransformAllClass {
 
 		// optimization loop
 		//
-		for (int ctr = 0; ctr < ITERATIONS_NUM; ctr++) {
+		for (int ctr = 0; ctr < iterations_num; ctr++) {
 			// The minimal error and its index.
 			resultMinimum = minimum(functionValues);
 			double[] params = coordinates.get((int) resultMinimum[1])

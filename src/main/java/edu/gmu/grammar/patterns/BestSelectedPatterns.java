@@ -1,6 +1,8 @@
 package edu.gmu.grammar.patterns;
 
 
+import java.util.Arrays;
+
 public class BestSelectedPatterns {
 	private double minimalError;
 	private TSPattern[] bestSelectedPatterns;
@@ -35,6 +37,19 @@ public class BestSelectedPatterns {
 
 	public void setBestParams(int[] bestParams) {
 		this.bestParams = bestParams;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder output = new StringBuilder();
+		output.append("Minimal Error: " + this.minimalError + "\n");
+		output.append("Best Parameters: " + Arrays.toString(this.bestParams) + "\n");
+		output.append("Best Patterns:\n");
+		for(int i = 0; i < this.bestSelectedPatterns.length; i++) {
+			output.append(this.bestSelectedPatterns[i].toString() + "\n");
+		}
+
+		return output.toString();
 	}
 
 }
