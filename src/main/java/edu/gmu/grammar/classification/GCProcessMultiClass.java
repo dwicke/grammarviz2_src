@@ -12,13 +12,14 @@ import edu.gmu.grammar.transform.PatternsAndTransformedData;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import weka.attributeSelection.*;
-import weka.classifiers.*;
-import weka.classifiers.bayes.*;
+import weka.classifiers.Classifier;
+import weka.classifiers.Evaluation;
+//import weka.classifiers.bayes.*;
 import weka.classifiers.functions.*;
 import weka.classifiers.functions.supportVector.PolyKernel;
 import weka.classifiers.functions.supportVector.RBFKernel;
-import weka.classifiers.lazy.IBk;
-import weka.classifiers.trees.*;
+//import weka.classifiers.lazy.IBk;
+//import weka.classifiers.trees.*;
 import weka.core.*;
 
 import java.text.DecimalFormat;
@@ -89,16 +90,29 @@ public class GCProcessMultiClass {
 		// ArrayList<TimeSeriesTest> allTestData = buildTestData(testData);
 		TSPattern[] finalPatterns = combinePatterns(bestSelectedPatternsAllCls);
 		DataProcessor.writeFinalPatterns(finalPatterns, dataName);
+		System.out.println("Printing Final Patterns:");
+		for(int i = 0; i < finalPatterns.length; i ++) {
+			System.out.println(finalPatterns[i].toString());
+		}
 		
 		// finalPatterns = featureRemoveRedundence(finalPatterns,
 		// redundencyPer);
 		double[][] transformedTrainTS = transformTSWithPatternsTest(finalPatterns, trainData);
 		// int[] idx = featureSelection(transformedTrainTS);
+		System.out.println("Printing TransformedTrainTS:");
+		for(int i = 0; i < transformedTrainTS.length; i ++) {
+			System.out.println(Arrays.toString(transformedTrainTS[i]));
+		}
 
 		// DataProcessor.writePatternToFile(finalPatterns, dataName);
 		double[][] transformedTestTS = transformTSWithPatternsTest(finalPatterns, testData);
 		// DataProcessor.writeArray(transformedTestTS);
+		System.out.println("Printing TransformedTestTs:");
+		for(int i = 0; i < transformedTestTS.length; i ++) {
+			System.out.println(Arrays.toString(transformedTestTS[i]));
+		}
 		double error = classifyTransformedData(transformedTrainTS, transformedTestTS);
+		System.out.println("Printing Error: " + Double.toString(error));
 
 		consoleLogger.info("Classification Accuracy: " + String.valueOf(error));
 
@@ -329,7 +343,7 @@ public class GCProcessMultiClass {
 	public SMO getPolySvmClassifier(double svmComplexity, double polyKernelExponent) {
 		SMO classifier = new SMO();
 
-		classifier.setBuildLogisticModels(false);
+		//classifier.setBuildLogisticModels(false);
 		classifier.setC(svmComplexity);
 		classifier.setChecksTurnedOff(false);
 		classifier.setDebug(false);
@@ -353,7 +367,7 @@ public class GCProcessMultiClass {
 	public static SMO getRbfSvmClassifier(double svmComplexity, double gamma) {
 		SMO classifier = new SMO();
 
-		classifier.setBuildLogisticModels(false);
+		//classifier.setBuildLogisticModels(false);
 		classifier.setC(svmComplexity);
 		classifier.setChecksTurnedOff(false);
 		classifier.setDebug(false);
@@ -383,10 +397,10 @@ public class GCProcessMultiClass {
 	 * @return
 	 */
 	public Classifier chooseClassifier(Instances data) {
-		int classfier = 4;
+		//int classfier = 4;
 
-		Classifier cls;
-		switch (classfier) {
+		Classifier cls = getPolySvmClassifier(1, 3);
+		/*switch (classfier) {
 		case 1:
 			cls = new J48();
 			break;
@@ -433,7 +447,7 @@ public class GCProcessMultiClass {
 		default:
 			cls = new NaiveBayes();
 			break;
-		}
+		}*/
 
 		return cls;
 	}
@@ -518,7 +532,8 @@ public class GCProcessMultiClass {
 			classifier.buildClassifier(train);
 			// evaluate classifier and print some statistics
 			Evaluation eval = new Evaluation(train);
-			eval.evaluateModel(classifier, test);
+			System.out.println("Evaluated Results:");
+			System.out.println(eval.evaluateModel(classifier, test));
 			String rltString = eval.toSummaryString("\n\n======\nResults: ", false);
 			System.out.println(rltString);
 
@@ -712,7 +727,7 @@ public class GCProcessMultiClass {
 				vals[attrI] = array[tsI][attrI];
 			}
 			vals[attrNum - 1] = array[tsI][attrNum - 1] - 1;
-			test.add(new Instance(1.0, vals));
+			test.add(new SparseInstance(1.0, vals));
 		}
 		test.setClassIndex(test.numAttributes() - 1);
 		return (test);

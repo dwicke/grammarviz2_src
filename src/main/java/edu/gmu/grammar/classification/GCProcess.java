@@ -23,7 +23,7 @@ import weka.classifiers.functions.supportVector.PolyKernel;
 import weka.classifiers.functions.supportVector.RBFKernel;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.meta.*;
-import weka.classifiers.mi.*;
+//import weka.classifiers.mi.*;
 import weka.classifiers.trees.*;
 import weka.core.*;
 import weka.filters.AllFilter;
@@ -2796,7 +2796,7 @@ public class GCProcess {
 			double polyKernelExponent) {
 		SMO classifier = new SMO();
 
-		classifier.setBuildLogisticModels(false);
+		//classifier.setBuildLogisticModels(false);
 		classifier.setC(svmComplexity);
 		classifier.setChecksTurnedOff(false);
 		classifier.setDebug(false);
@@ -2820,7 +2820,7 @@ public class GCProcess {
 	public static SMO getRbfSvmClassifier(double svmComplexity, double gamma) {
 		SMO classifier = new SMO();
 
-		classifier.setBuildLogisticModels(false);
+		//classifier.setBuildLogisticModels(false);
 		classifier.setC(svmComplexity);
 		classifier.setChecksTurnedOff(false);
 		classifier.setDebug(false);
@@ -2843,7 +2843,7 @@ public class GCProcess {
 		return classifier;
 	}
 
-	public Classifier chooseBestParamsForClassifier(Classifier cls,
+	/*public Classifier chooseBestParamsForClassifier(Classifier cls,
 			Instances data) {
 		GridSearch gs = new GridSearch();
 		gs.setFilter(new AllFilter());
@@ -2875,7 +2875,7 @@ public class GCProcess {
 			e.printStackTrace();
 		}
 		return gs.getBestClassifier();
-	}
+	}*/
 
 	/**
 	 * 
@@ -3210,7 +3210,7 @@ public class GCProcess {
 				vals[attrI] = array[tsI][attrI];
 			}
 			vals[attrNum - 1] = array[tsI][attrNum - 1] - 1;
-			test.add(new Instance(1.0, vals));
+			test.add(new SparseInstance(1.0, vals));
 		}
 		test.setClassIndex(test.numAttributes() - 1);
 		return (test);
