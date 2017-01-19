@@ -390,7 +390,7 @@ public class PSDirectTransformAllClass {
 		results.testData = testData = UCRUtils.readUCRData(TEST_DATA_PATH);
 
 		classifyWithTransformedDataAllCls(dataName,
-				bestSelectedPatternsAllClass);
+				bestSelectedPatternsAllClass, results);
 		int tsLen = trainData.entrySet().iterator().next().getValue().get(0).length;
 		DataProcessor.writeDIRECTNumToFile(directTime, tsLen);
 
@@ -454,11 +454,17 @@ public class PSDirectTransformAllClass {
 	}
 
 	private static void classifyWithTransformedDataAllCls(String dataName,
-			BestSelectedPatterns[] bestSelectedPatterns)
+			BestSelectedPatterns[] bestSelectedPatterns) {
+		PSDirectTransformAllClass.classifyWithTransformedDataAllCls(
+				dataName, bestSelectedPatterns, null);
+	}
+
+	private static void classifyWithTransformedDataAllCls(String dataName,
+			BestSelectedPatterns[] bestSelectedPatterns, ClassificationResults results)
 			throws IndexOutOfBoundsException {
 		GCProcessMultiClass gcp = new GCProcessMultiClass(FOLDERNUM);
 		gcp.doClassifyTransformedMultiCls(bestSelectedPatterns, dataName,
-				trainData, testData, giMethod);
+				trainData, testData, giMethod, results);
 	}
 
 	private static void update() {

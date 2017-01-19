@@ -11,10 +11,13 @@ public class ClassificationResults {
 
     public Map<String, List<double[]>> testData;
 
+    public String results;
+
     @Override
     public String toString() {
         StringBuilder output = new StringBuilder();
         output.append("Test Data Path: " + this.testDataPath + "\n");
+        output.append(results);
         return output.toString();
     }
 }

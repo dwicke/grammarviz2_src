@@ -15,6 +15,7 @@ import weka.attributeSelection.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 //import weka.classifiers.bayes.*;
+import weka.classifiers.evaluation.output.prediction.*;
 import weka.classifiers.functions.*;
 import weka.classifiers.functions.supportVector.PolyKernel;
 import weka.classifiers.functions.supportVector.RBFKernel;
@@ -82,37 +83,41 @@ public class GCProcessMultiClass {
 	}
 
 	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls, String dataName,
+											  Map<String, List<double[]>> trainData, Map<String, List<double[]>> testData,
+											  GrammarIndcutionMethod giMethod) {
+		this.doClassifyTransformedMultiCls(bestSelectedPatternsAllCls, dataName,
+				trainData, testData, giMethod, null);
+	}
+
+	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls, String dataName,
 			Map<String, List<double[]>> trainData, Map<String, List<double[]>> testData,
-			GrammarIndcutionMethod giMethod) {
+			GrammarIndcutionMethod giMethod,
+			ClassificationResults results) {
 
 		consoleLogger.debug("Classifing...");
 
 		// ArrayList<TimeSeriesTest> allTestData = buildTestData(testData);
 		TSPattern[] finalPatterns = combinePatterns(bestSelectedPatternsAllCls);
 		DataProcessor.writeFinalPatterns(finalPatterns, dataName);
-		System.out.println("Printing Final Patterns:");
-		for(int i = 0; i < finalPatterns.length; i ++) {
-			System.out.println(finalPatterns[i].toString());
-		}
-		
+
 		// finalPatterns = featureRemoveRedundence(finalPatterns,
 		// redundencyPer);
 		double[][] transformedTrainTS = transformTSWithPatternsTest(finalPatterns, trainData);
 		// int[] idx = featureSelection(transformedTrainTS);
-		System.out.println("Printing TransformedTrainTS:");
-		for(int i = 0; i < transformedTrainTS.length; i ++) {
-			System.out.println(Arrays.toString(transformedTrainTS[i]));
-		}
 
 		// DataProcessor.writePatternToFile(finalPatterns, dataName);
 		double[][] transformedTestTS = transformTSWithPatternsTest(finalPatterns, testData);
 		// DataProcessor.writeArray(transformedTestTS);
-		System.out.println("Printing TransformedTestTs:");
-		for(int i = 0; i < transformedTestTS.length; i ++) {
-			System.out.println(Arrays.toString(transformedTestTS[i]));
+
+		double error;
+
+		if(results != null) {
+			StringBuffer output = new StringBuffer();
+			error = classifyTransformedData(transformedTrainTS, transformedTestTS, output);
+			results.results = output.toString();
+		} else {
+			error = classifyTransformedData(transformedTrainTS, transformedTestTS);
 		}
-		double error = classifyTransformedData(transformedTrainTS, transformedTestTS);
-		System.out.println("Printing Error: " + Double.toString(error));
 
 		consoleLogger.info("Classification Accuracy: " + String.valueOf(error));
 
@@ -511,6 +516,10 @@ public class GCProcessMultiClass {
 	}
 
 	public double classifyTransformedData(double[][] trainData, double[][] testData) {
+		return this.classifyTransformedData(trainData, testData, null);
+	}
+
+	public double classifyTransformedData(double[][] trainData, double[][] testData, StringBuffer output) {
 		// return svmClassify(trainData, testData);
 
 		Instances train = buildArff(trainData);
@@ -532,8 +541,15 @@ public class GCProcessMultiClass {
 			classifier.buildClassifier(train);
 			// evaluate classifier and print some statistics
 			Evaluation eval = new Evaluation(train);
-			System.out.println("Evaluated Results:");
-			System.out.println(eval.evaluateModel(classifier, test));
+			eval.evaluateModel(classifier, test);
+
+			if(output != null) {
+				CSV results = new CSV();
+				results.setBuffer(output);
+				results.setHeader(test);
+				results.print(classifier,test);
+			}
+
 			String rltString = eval.toSummaryString("\n\n======\nResults: ", false);
 			System.out.println(rltString);
 
