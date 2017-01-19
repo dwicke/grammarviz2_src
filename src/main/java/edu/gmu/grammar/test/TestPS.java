@@ -27,18 +27,4 @@ public class TestPS{
 		}
 	}
 
-	private static void testThree(String[] initialParams) throws IndexOutOfBoundsException, IOException {
-		runMethods(initialParams, "EXACT");
-		// runMethods(initialParams, "NONE");
-		// runMethods(initialParams, "MINDIST");
-	}
-
-	private static void runMethods(String[] initialParams, String strategy)
-			throws IndexOutOfBoundsException, IOException {
-		String[] newParams = new String[4];
-		System.arraycopy(initialParams, 0, newParams, 0, 3);
-		newParams[3] = strategy;
-		PSDirectTransformAllClass.main(newParams);
-	}
-
 }

@@ -4,6 +4,8 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import edu.gmu.connectGI.GrammarIndcutionMethod;
 import edu.gmu.grammar.classification.util.*;
+import edu.gmu.grammar.classification.util.TSTesting.DataProcessor;
+import edu.gmu.grammar.classification.util.TSTesting.TimeSeriesTrain;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
@@ -171,7 +173,7 @@ public class GCProcessMultiClass {
 	 * @param trainDataPerClass
 	 */
 	public PatternsAndTransformedData transformTS(HashMap<String, TSPatterns> selectedPatterns,
-			Map<String, List<TimeSeriesTrain>> trainDataPerClass, PatternsSimilarity pSimilarity) {
+												  Map<String, List<TimeSeriesTrain>> trainDataPerClass, PatternsSimilarity pSimilarity) {
 
 		// int tsNum = 0;
 		int patternNum = 0;

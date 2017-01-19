@@ -5,17 +5,15 @@ import ch.qos.logback.classic.Logger;
 import edu.gmu.connectGI.GrammarIndcutionMethod;
 import edu.gmu.dataprocess.UCRUtils;
 import edu.gmu.grammar.classification.GCProcessMultiClass;
+import edu.gmu.grammar.classification.util.TSTesting.DataProcessor;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.ps.direct.GCErrorFunctionMultiCls;
-import edu.gmu.ps.help.InfoPrinter;
 import net.seninp.jmotif.direct.Point;
 import net.seninp.jmotif.direct.ValuePointColored;
 import net.seninp.jmotif.sax.NumerosityReductionStrategy;
-import net.seninp.util.StackTrace;
 import org.slf4j.LoggerFactory;
 
-import javax.print.attribute.standard.PDLOverrideSupported;
 import java.io.IOException;
 //import java.nio.file.Paths;
 import java.text.DateFormat;
@@ -118,140 +116,6 @@ public class PSDirectTransformAllClass {
 	// private static Boolean isShifted = false;
 	private static GrammarIndcutionMethod giMethod = GrammarIndcutionMethod.SEQUITUR;
 
-	/**
-	 * 
-	 * @param args
-	 *            : DataName, trainFile, testFile, minWindowSize, maxWindowSize,
-	 *            minPAA, maxPAA, minAlphabetSize, maxAlphabetSize,
-	 *            NumerosityReductionStrategy
-	 * @throws IOException
-	 * @throws IndexOutOfBoundsException
-	 */
-	public static void main(String[] args) {
-
-		// For timing
-		long startTime = System.currentTimeMillis();
-
-		String dataName = args[0];
-
-		TRAINING_DATA_PATH = args[1];
-		TEST_DATA_PATH = args[2];
-		try {
-			trainData = UCRUtils.readUCRData(TRAINING_DATA_PATH);
-			testData = UCRUtils.readUCRData(TEST_DATA_PATH);
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-10);
-		}
-
-		InfoPrinter.printDataInfo(consoleLogger, trainData, testData);
-
-		if (args.length == 10) {
-			// Main method
-			// String dataName = args[0];
-			String[] initialParams = new String[10];
-			System.arraycopy(args, 1, initialParams, 0, 8);
-
-			allStrategy = NumerosityReductionStrategy.valueOf(args[9]);
-			runProgram(initialParams, dataName);
-
-		} else if (args.length == 4) {
-			// Main method
-			// String dataName = args[0];
-			allStrategy = NumerosityReductionStrategy.valueOf(args[3]);
-
-			String[] defaultParams = setDefaultParams(args);
-			runProgram(defaultParams, dataName);
-		} else if (args.length == 3) {
-			// Main method
-			allStrategy = NumerosityReductionStrategy.EXACT;
-
-			String[] defaultParams = setDefaultParams(args);
-			runProgram(defaultParams, dataName);
-		}
-
-		else {
-			System.out.print(InfoPrinter.printHelp());
-			System.exit(-10);
-		}
-
-		// For timing
-		long endTime = System.currentTimeMillis();
-		long totalTime = endTime - startTime;
-		printResultInfo(totalTime, dataName);
-
-	}
-
-	public static String[] setDefaultParams(String args[]) {
-		String[] defaultParam = new String[14];
-		// Set the percentage of (sliding window)/(ts length)
-		// lower bound.
-		double lper = 0.1;
-		// upper bound.
-		double uper = 0.9;
-
-		// Lower bound of paa size.
-		String lpaa = "2";
-		// Upper bound of paa size.
-		String upaa = "20";
-
-		// lower bound of alphabet size.
-		String lAlpha = "2";
-		// upper bound of alphabet size.
-		String uAlpha = "20";
-		// Folder number for cross validation.
-		String folderNum = "5";
-		// Percentage of time series number. Repeated pattern has frequency
-		// smaller than this threshold will be removed without consideration.
-		String rpFrequencyTPer = "0.2";
-		// The maximum number of different repeated patterns. If there are more
-		// than this number of repeated pattern, further refinement is required.
-		String maxRPNum = "50";
-		// If the difference of starting positions are smaller than or equal to
-		// this value * window size, that means they are overlapped, one of them
-		// should be removed.
-		String overlapTPer = "0.5";
-		// true means using ts coverage as the frequency, false means using the
-		// num of occurrence as frequency.
-		String usingCoverageFrequency = "true";
-		// The initial value of similarity threshold
-		String tSimilar = "0.02";
-
-		int tsLen = trainData.entrySet().iterator().next().getValue().get(0).length;
-		int lWLen = (int) (tsLen * lper);
-		int lb = lWLen > 1 ? lWLen : 1;
-		int uWLen = (int) (tsLen * uper);
-		int ub = uWLen > 1 ? uWLen : 1;
-
-		// Copy the path of train and test data.
-		System.arraycopy(args, 1, defaultParam, 0, 2);
-
-		// minimal window size
-		defaultParam[2] = String.valueOf(lb);
-		// maximal window size
-		defaultParam[3] = String.valueOf(ub);
-		// minimal paa size
-		defaultParam[4] = lpaa;
-		// maximal paa size
-		defaultParam[5] = upaa;
-		// minimal alphabet size
-		defaultParam[6] = lAlpha;
-		// maximal alphabet size
-		defaultParam[7] = uAlpha;
-		// Folder number for cross validation.
-		defaultParam[8] = folderNum;
-		// Percentage of TS number indicate validate repeated patterns.
-		defaultParam[9] = rpFrequencyTPer;
-		// Maximum number of different repeated patterns.
-		defaultParam[10] = maxRPNum;
-		// Redundancy threshold.
-		defaultParam[11] = overlapTPer;
-
-		defaultParam[12] = usingCoverageFrequency;
-		defaultParam[13] = tSimilar;
-
-		return defaultParam;
-	}
 
 	private static void loadTrainingData(String trainingDataFilePath) throws IOException {
 		TRAINING_DATA_PATH = trainingDataFilePath;
@@ -395,68 +259,6 @@ public class PSDirectTransformAllClass {
 		DataProcessor.writeDIRECTNumToFile(directTime, tsLen);
 
 		return results;
-	}
-
-	public static void runProgram(String[] initialParam, String dataName) {
-		try {
-			if (14 == initialParam.length) {
-				// Classify data using original data with SVM.
-				// DataProcessor.classifyTestingVarTransformedTT(trainData,
-				// testData, gcParams);
-
-				// Upper and lower bound of sliding window size.
-				int lbwindow = Integer.valueOf(initialParam[2]).intValue();
-				int ubwindow = Integer.valueOf(initialParam[3]).intValue();
-
-				// window size, PAA size, alphabet size.
-				lowerBounds = new int[] { lbwindow,
-						Integer.valueOf(initialParam[4]).intValue(),
-						Integer.valueOf(initialParam[6]).intValue() };
-				upperBounds = new int[] { ubwindow,
-						Integer.valueOf(initialParam[5]).intValue(),
-						Integer.valueOf(initialParam[7]).intValue() };
-
-				FOLDERNUM = Integer.valueOf(initialParam[8]).intValue();
-				rpFrequencyTPer = Double.valueOf(initialParam[9]);
-				maxRPNum = Integer.valueOf(initialParam[10]).intValue();
-				overlapTPer = Double.valueOf(initialParam[11]);
-				isCoverageFre = Boolean.valueOf(initialParam[12]);				
-				pSimilarity = new PatternsSimilarity(Double.valueOf(initialParam[13]));
-
-				iterations_num = 5;
-
-				consoleLogger.info("processing paramleters: "
-						+ Arrays.toString(initialParam));
-
-				consoleLogger.info("running sampling for " + giMethod
-						+ " with " + allStrategy.toString() + " strategy...");
-
-				// Train to select the best patterns.
-				sample(allStrategy, dataName);
-
-				// InfoPrinter.printBestParams(bestSelectedPatternsAllClass);
-
-				// Classify with the best selected patterns.
-				classifyWithTransformedDataAllCls(dataName,
-						bestSelectedPatternsAllClass);
-				int tsLen = trainData.entrySet().iterator().next().getValue().get(0).length;
-				DataProcessor.writeDIRECTNumToFile(directTime, tsLen);
-
-			} else {
-				System.out.print(InfoPrinter.printHelp());
-				System.exit(-10);
-			}
-		} catch (Exception e) {
-			System.err.println(StackTrace.toString(e));
-			System.exit(-10);
-		}
-
-	}
-
-	private static void classifyWithTransformedDataAllCls(String dataName,
-			BestSelectedPatterns[] bestSelectedPatterns) {
-		PSDirectTransformAllClass.classifyWithTransformedDataAllCls(
-				dataName, bestSelectedPatterns, null);
 	}
 
 	private static void classifyWithTransformedDataAllCls(String dataName,

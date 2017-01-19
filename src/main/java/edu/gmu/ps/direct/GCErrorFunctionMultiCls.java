@@ -6,6 +6,8 @@ import edu.gmu.connectGI.ConnectGI;
 import edu.gmu.connectGI.GrammarIndcutionMethod;
 import edu.gmu.grammar.classification.GCProcessMultiClass;
 import edu.gmu.grammar.classification.util.*;
+import edu.gmu.grammar.classification.util.TSTesting.DataProcessor;
+import edu.gmu.grammar.classification.util.TSTesting.TimeSeriesTrain;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;

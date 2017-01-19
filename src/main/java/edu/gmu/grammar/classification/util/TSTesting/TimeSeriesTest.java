@@ -1,23 +1,32 @@
-package edu.gmu.grammar.classification.util;
+package edu.gmu.grammar.classification.util.TSTesting;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TimeSeriesTestShifted {
+public class TimeSeriesTest {
 	private String trueLable;
 	private String assignedLabel = null;
 	private double[] values;
 	private double distToNN;
+	private double minError;
 	Boolean assignedByClass = false;
 	private ArrayList<String> labelByOther = new ArrayList<String>();
 	private Map<String, Integer> assignedLabels = new HashMap<String, Integer>();
-	private double[] rebuildedValues;
+	private Map<Integer, Double> matchPs = new HashMap<Integer, Double>();
+	private double lenNN;
 
-	public TimeSeriesTestShifted(String trueLable, double[] values, double[] rebuildedValues) {
+	public TimeSeriesTest(String trueLable, double[] values) {
 		this.trueLable = trueLable;
 		this.values = values;
-		this.rebuildedValues = rebuildedValues;
+	}
+
+	public double getMinError() {
+		return minError;
+	}
+
+	public void setMinError(double minError) {
+		this.minError = minError;
 	}
 
 	public String getTrueLable() {
@@ -44,20 +53,20 @@ public class TimeSeriesTestShifted {
 		this.values = values;
 	}
 
-	public double[] getRebuildedValues() {
-		return rebuildedValues;
-	}
-
-	public void setRebuildedValues(double[] rebuildedValues) {
-		this.rebuildedValues = rebuildedValues;
-	}
-
 	public double getDistToNN() {
 		return distToNN;
 	}
 
 	public void setDistToNN(double distToNN) {
 		this.distToNN = distToNN;
+	}
+
+	public double getLenNN() {
+		return lenNN;
+	}
+
+	public void setLenNN(double lenNN) {
+		this.lenNN = lenNN;
 	}
 
 	public Boolean getAssignedByClass() {
@@ -76,6 +85,14 @@ public class TimeSeriesTestShifted {
 		this.labelByOther = labelByOther;
 	}
 
+	public Map<Integer, Double> getMatchPs() {
+		return matchPs;
+	}
+
+	public void setMatchPs(Map<Integer, Double> matchPs) {
+		this.matchPs = matchPs;
+	}
+
 	public Map<String, Integer> getAssignedLabels() {
 		return assignedLabels;
 	}
@@ -83,5 +100,6 @@ public class TimeSeriesTestShifted {
 	public void setAssignedLabels(Map<String, Integer> assignedLabels) {
 		this.assignedLabels = assignedLabels;
 	}
+
 
 }

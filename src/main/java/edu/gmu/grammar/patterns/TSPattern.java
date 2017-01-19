@@ -140,10 +140,12 @@ public class TSPattern implements Cloneable, Comparable<TSPattern> {
 	public String toString() {
 		StringBuilder output = new StringBuilder();
 		output.append("Label: " + this.label + "\n");
-		output.append("Patterns in class (" + this.patternsInClass.size() + "):\n");
-		for(int i = 0; i < this.patternsInClass.size(); i++) {
-			output.append(Arrays.toString(this.patternsInClass.get(i)) + "\n");
-		}
+		output.append("Length PatternsTS (" + this.patternTS.length + "):\n");
+		output.append(Arrays.toString(this.patternTS));
+		//output.append("Patterns in class (" + this.patternsInClass.size() + "):\n");
+		//for(int i = 0; i < this.patternTS.length; i++) {
+		//	output.append(this.patternTS[i] );
+		//}
 
 		return output.toString();
 	}
