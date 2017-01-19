@@ -4,8 +4,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import edu.gmu.connectGI.GrammarIndcutionMethod;
 import edu.gmu.grammar.classification.util.*;
-import edu.gmu.grammar.classification.util.TSTesting.DataProcessor;
-import edu.gmu.grammar.classification.util.TSTesting.TimeSeriesTrain;
+import edu.gmu.grammar.classification.util.TimeSeriesTrain;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
@@ -25,8 +24,6 @@ import weka.classifiers.functions.supportVector.RBFKernel;
 //import weka.classifiers.trees.*;
 import weka.core.*;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -100,7 +97,6 @@ public class GCProcessMultiClass {
 
 		// ArrayList<TimeSeriesTest> allTestData = buildTestData(testData);
 		TSPattern[] finalPatterns = combinePatterns(bestSelectedPatternsAllCls);
-		DataProcessor.writeFinalPatterns(finalPatterns, dataName);
 
 		// finalPatterns = featureRemoveRedundence(finalPatterns,
 		// redundencyPer);
@@ -555,10 +551,6 @@ public class GCProcessMultiClass {
 			String rltString = eval.toSummaryString("\n\n======\nResults: ", false);
 			System.out.println(rltString);
 
-			NumberFormat formatter = new DecimalFormat("#0.000");
-
-			String error = String.valueOf(formatter.format(eval.errorRate())) + " ";
-			DataProcessor.writeClassificationRlt(error);
 			return eval.errorRate();
 
 		} catch (Exception e) {

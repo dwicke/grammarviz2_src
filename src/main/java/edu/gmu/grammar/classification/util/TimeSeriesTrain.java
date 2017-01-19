@@ -1,4 +1,4 @@
-package edu.gmu.grammar.classification.util.TSTesting;
+package edu.gmu.grammar.classification.util;
 
 public class TimeSeriesTrain {
 	private String trueLable;

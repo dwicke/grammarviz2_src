@@ -5,7 +5,6 @@ import ch.qos.logback.classic.Logger;
 import edu.gmu.connectGI.GrammarIndcutionMethod;
 import edu.gmu.dataprocess.UCRUtils;
 import edu.gmu.grammar.classification.GCProcessMultiClass;
-import edu.gmu.grammar.classification.util.TSTesting.DataProcessor;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.ps.direct.GCErrorFunctionMultiCls;
@@ -255,8 +254,6 @@ public class PSDirectTransformAllClass {
 
 		classifyWithTransformedDataAllCls(dataName,
 				bestSelectedPatternsAllClass, results);
-		int tsLen = trainData.entrySet().iterator().next().getValue().get(0).length;
-		DataProcessor.writeDIRECTNumToFile(directTime, tsLen);
 
 		return results;
 	}
@@ -1001,30 +998,6 @@ public class PSDirectTransformAllClass {
 		sb.append(" error ").append(fmt.format(error));
 
 		return sb.toString();
-	}
-
-	public static void printResultInfo(long totalTime, String dataName) {
-		float t = totalTime / 1000.0f;
-		DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-		Date date = new Date();
-		StringBuilder sb = new StringBuilder();
-		sb.append("Running time for data ");
-		sb.append(dataName);
-		sb.append(": ");
-		sb.append(DataProcessor.millisToShortDHMS(totalTime));
-		sb.append("\n");
-		sb.append("Dynamical similarity threshold: ");
-		sb.append(pSimilarity.gettSimilar());
-		sb.append("\n");
-		sb.append("Current date: ");
-		sb.append(dateFormat.format(date));
-		consoleLogger.info(sb.toString());
-
-		// String timeSeconds = String.valueOf(TimeUnit.MILLISECONDS
-		// .toSeconds(totalTime));
-		String rlt = String.valueOf(t) + " " + dataName + " "
-				+ allStrategy.toString() + " " + pSimilarity.gettSimilar() + "\n";
-		DataProcessor.writeClassificationRlt(rlt);
 	}
 
 }

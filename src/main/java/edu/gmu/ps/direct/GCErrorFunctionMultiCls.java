@@ -6,8 +6,7 @@ import edu.gmu.connectGI.ConnectGI;
 import edu.gmu.connectGI.GrammarIndcutionMethod;
 import edu.gmu.grammar.classification.GCProcessMultiClass;
 import edu.gmu.grammar.classification.util.*;
-import edu.gmu.grammar.classification.util.TSTesting.DataProcessor;
-import edu.gmu.grammar.classification.util.TSTesting.TimeSeriesTrain;
+import edu.gmu.grammar.classification.util.TimeSeriesTrain;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;
@@ -15,6 +14,7 @@ import edu.gmu.grammar.transform.PatternsAndTransformedData;
 import net.seninp.jmotif.direct.Point;
 import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 import net.seninp.util.StackTrace;
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import weka.classifiers.Evaluation;
 
@@ -56,9 +56,7 @@ public class GCErrorFunctionMultiCls {
 
 	/**
 	 * Constructor.
-	 * 
-	 * @param data
-	 * @param holdOutSampleSize
+	 *
 	 */
 	public GCErrorFunctionMultiCls(Map<String, List<double[]>> inputTrainData,
 			NumerosityReductionStrategy strategy,
@@ -92,6 +90,66 @@ public class GCErrorFunctionMultiCls {
 		this.overlapTPer = overlapTPer;
 		this.isCoverageFre = isCoverageFre;
 		this.pSimilarity = pSimilarity;
+	}
+
+	public static int[] convertIntegers(List<Integer> integers) {
+		int[] ret = new int[integers.size()];
+		Iterator<Integer> iterator = integers.iterator();
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = iterator.next().intValue();
+		}
+		return ret;
+	}
+
+	// Originally from the DataProcess Class - Copied over for code cleanup
+	public static HashMap<String, double[]> concatenateTrainInTrain(
+			Map<String, List<TimeSeriesTrain>> trainDataPerClass, HashMap<String, int[]> allStartPositions) {
+
+		HashMap<String, double[]> concatenatedData = new HashMap<String, double[]>();
+
+		List<Entry<String, List<TimeSeriesTrain>>> list = new ArrayList<Entry<String, List<TimeSeriesTrain>>>(
+				trainDataPerClass.entrySet());
+		Collections.shuffle(list);
+
+		for (Entry<String, List<TimeSeriesTrain>> e : list) {
+			String classLabel = e.getKey();
+			// if(classLabel.equals("41"))
+			// System.out.println();
+
+			// Record the start point of time series in concatenated one.
+			ArrayList<Integer> temp = new ArrayList<Integer>();
+			// temp.add(0);
+			int startPoint = 0;
+
+			int tsNum = e.getValue().size();
+			int tsIdx = 1;
+
+			for (TimeSeriesTrain series : e.getValue()) {
+
+				double[] existSeries = concatenatedData.get(classLabel);
+				if (null == existSeries) {
+					concatenatedData.put(classLabel, series.getValues());
+				} else {
+					double[] newExistSeries = ArrayUtils.addAll(existSeries, series.getValues());
+					concatenatedData.put(classLabel, newExistSeries);
+
+				}
+				if (tsIdx < tsNum) {
+					startPoint += series.getValues().length;
+					temp.add(startPoint);
+				}
+				tsIdx++;
+			}
+
+			// if (temp.size() < 1)
+			// temp.add(0);
+
+			int[] tempInt = convertIntegers(temp);
+			allStartPositions.put(classLabel, tempInt);
+
+		}
+
+		return concatenatedData;
 	}
 
 	/**
@@ -133,8 +191,7 @@ public class GCErrorFunctionMultiCls {
 			HashMap<String, int[]> allStartPositions = new HashMap<String, int[]>();
 
 			// Concatenate training time series
-			HashMap<String, double[]> concatenateData = DataProcessor
-					.concatenateTrainInTrain(trainDataPerClass,
+			HashMap<String, double[]> concatenateData = concatenateTrainInTrain(trainDataPerClass,
 							allStartPositions);
 
 			// TODO: write concatenated data.
