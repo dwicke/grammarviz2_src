@@ -9,7 +9,7 @@ import edu.gmu.grammar.patterns.BestSelectedPatterns;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;
-import edu.gmu.grammar.transform.PatternsAndTransformedData;
+import edu.gmu.grammar.patterns.PatternsAndTransformedData;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import weka.attributeSelection.*;

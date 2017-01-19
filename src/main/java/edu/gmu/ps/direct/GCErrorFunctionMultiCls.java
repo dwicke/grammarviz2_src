@@ -10,7 +10,7 @@ import edu.gmu.grammar.classification.util.TimeSeriesTrain;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;
-import edu.gmu.grammar.transform.PatternsAndTransformedData;
+import edu.gmu.grammar.patterns.PatternsAndTransformedData;
 import net.seninp.jmotif.direct.Point;
 import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 import net.seninp.util.StackTrace;

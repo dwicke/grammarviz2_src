@@ -13,8 +13,9 @@ public class TestPS{
 			//String[] inputArgs = { "TOR", "data/TOR/TOR_TRAIN_ONE_EIGHTY", "data/TOR/TOR_TEST_ONE_EIGHTY" };
 			//String[] inputArgs = { "CAMERA-DATA", "data/camera-data/camera-to-basestation-rpm", "data/camera-data/camera-to-basestation-rpm-test" };
 			//testThree(inputArgs);
-			RPMTrainedData output = PSDirectTransformAllClass.RPMTrain("CBF", "data/CBF/CBF_TRAIN");
-			ClassificationResults testoutput =  PSDirectTransformAllClass.RPMTestData("CBF", "data/CBF/CBF_TEST");
+			PSDirectTransformAllClass testing = new PSDirectTransformAllClass();
+			RPMTrainedData output = testing.RPMTrain("CBF", "data/CBF/CBF_TRAIN");
+			ClassificationResults testoutput =  testing.RPMTestData("CBF", "data/CBF/CBF_TEST");
 			//RPMTrainedData output = PSDirectTransformAllClass.RPMTrain("TOR", "data/TOR/TOR_TRAIN_ONE_EIGHTY");
 			//PSDirectTransformAllClass.RPMTestData("TOR", "data/TOR/TOR_TEST_ONE_EIGHTY");
 			//RPMTrainedData output = PSDirectTransformAllClass.RPMTrain("CAMERA-DATA", "data/camera-data/camera-to-basestation-rpm");

@@ -1,7 +1,9 @@
 package edu.gmu.grammar.classification.util;
 
+import edu.gmu.grammar.classification.GCProcessMultiClass;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
 import edu.gmu.grammar.patterns.PatternsSimilarity;
+import edu.gmu.grammar.patterns.TSPattern;
 import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 
 import java.util.List;
@@ -34,13 +36,19 @@ public class RPMTrainedData {
 
     public int iterations_num;
 
+    public TSPattern[] finalPatterns() {
+        GCProcessMultiClass gcp = new GCProcessMultiClass(this.folderNum);
+        return gcp.combinePatterns(this.bestSelectedPatternsAllClass);
+    }
+
     @Override
     public String toString() {
         StringBuilder output = new StringBuilder();
         output.append("Train Data Path: " + this.training_data_path + "\n");
         output.append("Best Patterns All Classes");
-        for(int i = 0; i < this.bestSelectedPatternsAllClass.length; i++) {
-            output.append(this.bestSelectedPatternsAllClass[i].toString() + "\n");
+        TSPattern[] patterns = this.finalPatterns();
+        for(int i = 0; i < patterns.length; i++) {
+            output.append(patterns[i].toString() + "\n");
         }
 
         return output.toString();

@@ -14,114 +14,109 @@ import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-//import java.nio.file.Paths;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PSDirectTransformAllClass {
 
 	// the number formatter
-	private static final DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(
+	private  final DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(
 			Locale.US);
-	private static DecimalFormat fmt = new DecimalFormat("0.00###",
+	private  DecimalFormat fmt = new DecimalFormat("0.00###",
 			otherSymbols);
 
-	private static PatternsSimilarity pSimilarity;
+	private  PatternsSimilarity pSimilarity;
 
 	// array with all rectangle centerpoints
-	private static ArrayList<Double[]> centerPoints;
+	private  ArrayList<Double[]> centerPoints;
 
 	// array with all rectangle side lengths in each dimension
-	private static ArrayList<Double[]> lengthsSide;
+	private  ArrayList<Double[]> lengthsSide;
 
 	// array with distances from center points to the vertices
-	private static ArrayList<Double> diagonalLength;
+	private  ArrayList<Double> diagonalLength;
 
 	// array vector of all different distances, sorted
-	private static ArrayList<Double> differentDiagonalLength;
+	private  ArrayList<Double> differentDiagonalLength;
 
 	// array vector of minimum function value for each distance
-	private static double[] diagonalsMinFunc;
+	private  double[] diagonalsMinFunc;
 
 	// array with function values
-	private static ArrayList<Double> functionValues;
+	private  ArrayList<Double> functionValues;
 
 	// array used to track sampled points and function values
-	private static ArrayList<ValuePointColored> coordinates;
+	private  ArrayList<ValuePointColored> coordinates;
 
 	// array with function values
-	// private static ArrayList<Double> functionValues;
+	// private  ArrayList<Double> functionValues;
 
-	private static final double precision = 1E-16;
-	private static int b = 0;
-	private static double[] resultMinimum;
+	private  final double precision = 1E-16;
+	private  int b = 0;
+	private  double[] resultMinimum;
 
-	private static int sampledPoints;
-	private static int rectangleCounter;
-	private static int indexPotentialBestRec;
-	private static double minFunctionValue;
-	private static double[] minFunctionValuesDouble;
+	private  int sampledPoints;
+	private  int rectangleCounter;
+	private  int indexPotentialBestRec;
+	private  double minFunctionValue;
+	private  double[] minFunctionValuesDouble;
 
 	// init bounds
 	//
-	private static int dimensions = 3;
+	private  int dimensions = 3;
 
-	private static GCErrorFunctionMultiCls function;
+	private  GCErrorFunctionMultiCls function;
 
-	// static block - we instantiate the logger
+	//  block - we instantiate the logger
 	//
-	private static final Logger consoleLogger;
-	private static final Level LOGGING_LEVEL = Level.INFO;
+	private  final Logger consoleLogger;
+	private  final Level LOGGING_LEVEL = Level.INFO;
 
-	private static int directTime = 0;
+	private  int directTime = 0;
 	
-	private static final String COMMA = ", ";
-	static {
+	private  final String COMMA = ", ";
+	 {
 		consoleLogger = (Logger) LoggerFactory
 				.getLogger(PSDirectTransformAllClass.class);
 		consoleLogger.setLevel(LOGGING_LEVEL);
 	}
 
 	// the global minimum point
-	private static ValuePointColored minimum = ValuePointColored.at(
+	private  ValuePointColored minimum = ValuePointColored.at(
 			Point.at(0), Double.POSITIVE_INFINITY, false);
 
-	// private static BestCombination[] bestcombs;
-	// private static TopKBestPatterns[] bestKResults;
-	private static BestSelectedPatterns[] bestSelectedPatternsAllClass;
+	// private  BestCombination[] bestcombs;
+	// private  TopKBestPatterns[] bestKResults;
+	private  BestSelectedPatterns[] bestSelectedPatternsAllClass;
 
-	private static int[] upperBounds;
-	private static int[] lowerBounds;
+	private  int[] upperBounds;
+	private  int[] lowerBounds;
 
-	private static String TRAINING_DATA_PATH;
-	private static String TEST_DATA_PATH;
-	private static int iterations_num; // 5
-	private static int FOLDERNUM;
-	private static double rpFrequencyTPer;
-	private static int maxRPNum;
-	private static double overlapTPer;
-	private static Boolean isCoverageFre;
-	private static Boolean parmSet = false;
-	private static RPMTrainedData currentTrainedData;
+	private  String TRAINING_DATA_PATH;
+	private  String TEST_DATA_PATH;
+	private  int iterations_num; // 5
+	private  int FOLDERNUM;
+	private  double rpFrequencyTPer;
+	private  int maxRPNum;
+	private  double overlapTPer;
+	private  Boolean isCoverageFre;
 
-	private static Map<String, List<double[]>> trainData;
-	private static Map<String, List<double[]>> testData;
+	private  Map<String, List<double[]>> trainData;
+	private  Map<String, List<double[]>> testData;
 
-	private static NumerosityReductionStrategy allStrategy = NumerosityReductionStrategy.EXACT;
+	private  NumerosityReductionStrategy allStrategy = NumerosityReductionStrategy.EXACT;
 
-	// private static Boolean isShifted = false;
-	private static GrammarIndcutionMethod giMethod = GrammarIndcutionMethod.SEQUITUR;
+	// private  Boolean isShifted = false;
+	private  GrammarIndcutionMethod giMethod = GrammarIndcutionMethod.SEQUITUR;
 
 
-	private static void loadTrainingData(String trainingDataFilePath) throws IOException {
+	private  void loadTrainingData(String trainingDataFilePath) throws IOException {
 		TRAINING_DATA_PATH = trainingDataFilePath;
 		trainData = UCRUtils.readUCRData(TRAINING_DATA_PATH);
 	}
 
-	private static RPMTrainedData RPMTrainPrivate(String dataName,
+	private  RPMTrainedData RPMTrainPrivate(String dataName,
 												  String strategy,
 												  int lowerWindow, int upperWindow,
 												  int lowerPaa, int upperPaa,
@@ -154,8 +149,6 @@ public class PSDirectTransformAllClass {
 
 		rpmTrainedOutput.bestSelectedPatternsAllClass =  sample(allStrategy, dataName);
 
-		currentTrainedData = rpmTrainedOutput;
-
 		int[] bestParams =  rpmTrainedOutput.bestSelectedPatternsAllClass[0].getBestParams();
 		rpmTrainedOutput.windowSize = bestParams[0];
 		rpmTrainedOutput.paa = bestParams[1];
@@ -164,23 +157,23 @@ public class PSDirectTransformAllClass {
 		return rpmTrainedOutput;
 	}
 
-	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath) throws IOException {
-		return PSDirectTransformAllClass.RPMTrain(dataName, trainingDataFilePath,
+	public  RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath) throws IOException {
+		return this.RPMTrain(dataName, trainingDataFilePath,
 				// Default Strategy
 				"EXACT");
 	}
 
-	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
+	public  RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
 										  String strategy) throws IOException {
-		return PSDirectTransformAllClass.RPMTrain(dataName, trainingDataFilePath, strategy,
+		return this.RPMTrain(dataName, trainingDataFilePath, strategy,
 				// Default Number of Iterations
 				5);
 	}
-	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
+	public  RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
 										  String strategy,
 										  int iterations) throws IOException {
 
-		PSDirectTransformAllClass.loadTrainingData(trainingDataFilePath);
+		this.loadTrainingData(trainingDataFilePath);
 
 		// lower bound.
 		double lper = 0.1;
@@ -194,7 +187,7 @@ public class PSDirectTransformAllClass {
 		int uWLen = (int) (tsLen * uper);
 		int ub = uWLen > 1 ? uWLen : 1;
 
-		return PSDirectTransformAllClass.RPMTrainPrivate(dataName, strategy,
+		return this.RPMTrainPrivate(dataName, strategy,
 				// Lower & Upper Window Default
 				lb, ub,
 				// Lower & Upper PAA Default
@@ -204,16 +197,16 @@ public class PSDirectTransformAllClass {
 				iterations);
 	}
 
-	public static RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
+	public  RPMTrainedData RPMTrain(String dataName, String trainingDataFilePath,
 										  String strategy,
 										  int lowerWindow, int upperWindow,
 										  int lowerPaa, int upperPaa,
 										  int lowerAlphabet, int upperAlphabet,
 										  int iterations) throws IOException {
 
-		PSDirectTransformAllClass.loadTrainingData(trainingDataFilePath);
+		this.loadTrainingData(trainingDataFilePath);
 
-		return PSDirectTransformAllClass.RPMTrainPrivate(dataName, strategy,
+		return this.RPMTrainPrivate(dataName, strategy,
 				lowerWindow, upperWindow,
 				lowerPaa, upperPaa,
 				lowerAlphabet, upperAlphabet,
@@ -221,7 +214,7 @@ public class PSDirectTransformAllClass {
 
 	}
 
-	public static void loadRPMTrain(RPMTrainedData trainedData) {
+	public  void loadRPMTrain(RPMTrainedData trainedData) {
 		TRAINING_DATA_PATH = trainedData.training_data_path;
 		trainData = trainedData.trainData;
 		allStrategy = NumerosityReductionStrategy.valueOf(trainedData.allStrategy);
@@ -243,11 +236,9 @@ public class PSDirectTransformAllClass {
 				+ " with " + allStrategy.toString() + " strategy...");
 
 		bestSelectedPatternsAllClass =  trainedData.bestSelectedPatternsAllClass;
-
-		currentTrainedData = trainedData;
 	}
 
-	public static ClassificationResults RPMTestData(String dataName, String testingDataFilePath) throws IOException {
+	public  ClassificationResults RPMTestData(String dataName, String testingDataFilePath) throws IOException {
 		ClassificationResults results = new ClassificationResults();
 		results.testDataPath = TEST_DATA_PATH = testingDataFilePath;
 		results.testData = testData = UCRUtils.readUCRData(TEST_DATA_PATH);
@@ -258,7 +249,7 @@ public class PSDirectTransformAllClass {
 		return results;
 	}
 
-	private static void classifyWithTransformedDataAllCls(String dataName,
+	private  void classifyWithTransformedDataAllCls(String dataName,
 			BestSelectedPatterns[] bestSelectedPatterns, ClassificationResults results)
 			throws IndexOutOfBoundsException {
 		GCProcessMultiClass gcp = new GCProcessMultiClass(FOLDERNUM);
@@ -266,7 +257,7 @@ public class PSDirectTransformAllClass {
 				trainData, testData, giMethod, results);
 	}
 
-	private static void update() {
+	private  void update() {
 		resultMinimum = minimum(functionValues);
 		// getting minimum and giving it at last points
 		minFunctionValue = resultMinimum[0];
@@ -327,7 +318,7 @@ public class PSDirectTransformAllClass {
 		}
 	}
 
-	private static BestSelectedPatterns[] sample(
+	private  BestSelectedPatterns[] sample(
             NumerosityReductionStrategy strategy, String dataName) {
 
 		// Initializing global varibales.
@@ -447,7 +438,7 @@ public class PSDirectTransformAllClass {
 
 	}
 
-	private static void updateBest(double[] errorValue, Point point) {
+	private  void updateBest(double[] errorValue, Point point) {
 
 		double[] coords = point.toArray();
 		int windowSize = Long.valueOf(Math.round(coords[0])).intValue();
@@ -477,7 +468,7 @@ public class PSDirectTransformAllClass {
 	 * 
 	 * @param j
 	 */
-	private static void samplingPotentialRec(int j) {
+	private  void samplingPotentialRec(int j) {
 
 		double max_L = lengthsSide.get(j)[0], delta;
 		Integer[] maxSideLengths;
@@ -603,7 +594,7 @@ public class PSDirectTransformAllClass {
 	 * @param delta
 	 * @param j
 	 */
-	private static void devideRec(double[] w, Integer[] maxSideLengths,
+	private  void devideRec(double[] w, Integer[] maxSideLengths,
 			double delta, int j) {
 
 		double[][] ab = sort(w);
@@ -675,7 +666,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Identify the set of all potentially optimal rectangles.
 	 */
-	private static ArrayList<Integer> identifyPotentiallyRec() {
+	private  ArrayList<Integer> identifyPotentiallyRec() {
 
 		double localPrecision = 1E-12;
 
@@ -742,7 +733,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Finds all points on the convex hull, even redundant ones.
 	 */
-	private static double[] conhull(double[] x, double[] y) {
+	private  double[] conhull(double[] x, double[] y) {
 		// System.out.println(Arrays.toString(x) + " : " + Arrays.toString(y));
 		int m = x.length;
 		double[] h;
@@ -841,7 +832,7 @@ public class PSDirectTransformAllClass {
 	 * @param m
 	 * @return
 	 */
-	private static int next(int v, int m) {
+	private  int next(int v, int m) {
 		if ((v + 1) == m) {
 			return 0;
 		} else {
@@ -856,7 +847,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * M is the size, v is the index, returns the previous index value.
 	 */
-	private static int pred(int idx, int size) {
+	private  int pred(int idx, int size) {
 		if ((idx + 1) == 1) {
 			return size - 1;
 		} else {
@@ -874,7 +865,7 @@ public class PSDirectTransformAllClass {
 	 * @param array
 	 * @return
 	 */
-	private static double[][] sort(double[] array) {
+	private  double[][] sort(double[] array) {
 		double[][] arr1 = new double[3][array.length];
 		double[][] arr2 = new double[2][array.length];
 		System.arraycopy(array, 0, arr1[0], 0, array.length);
@@ -896,7 +887,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Finds an index and a minimal value of an array.
 	 */
-	private static double[] minimum(double[] array) {
+	private  double[] minimum(double[] array) {
 		Double min = array[0];
 		double[] res = { min, 0.0 };
 		for (int i = 0; i < array.length; i++) {
@@ -912,7 +903,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Finds an index and a minimal value of an array.
 	 */
-	private static double[] minimum(ArrayList<Double> array) {
+	private  double[] minimum(ArrayList<Double> array) {
 		Double min = array.get(0);
 		double[] res = { min, 0.0 };
 		for (int i = 0; i < array.size(); i++) {
@@ -928,7 +919,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Finds matches.
 	 */
-	private static Integer[] findMatches(Double[] array, double value) {
+	private  Integer[] findMatches(Double[] array, double value) {
 		ArrayList<Integer> res = new ArrayList<Integer>();
 		for (int i = 0; i < array.length; i++) {
 			if (Math.abs(array[i] - value) <= precision) {
@@ -941,7 +932,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Finds matches.
 	 */
-	private static Integer[] findMatches(ArrayList<Double> array, double value) {
+	private  Integer[] findMatches(ArrayList<Double> array, double value) {
 		ArrayList<Integer> res = new ArrayList<Integer>();
 		for (int i = 0; i < array.size(); i++) {
 			if (Math.abs(array.get(i) - value) <= precision) {
@@ -954,7 +945,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Finds array elements that are not equal to the value up to threshold.
 	 */
-	private static Integer[] findNonMatches(ArrayList<Double> array,
+	private  Integer[] findNonMatches(ArrayList<Double> array,
 			double value) {
 		ArrayList<Integer> res = new ArrayList<Integer>();
 		for (int i = 0; i < array.size(); i++) {
@@ -968,7 +959,7 @@ public class PSDirectTransformAllClass {
 	/**
 	 * Returns arrays intersection.
 	 */
-	private static Integer[] findArrayIntersection(Integer[] arr1,
+	private  Integer[] findArrayIntersection(Integer[] arr1,
 			Integer[] arr2) {
 		ArrayList<Integer> res = new ArrayList<Integer>();
 		for (int i1 = 0; i1 < arr1.length; i1++) {
@@ -979,25 +970,6 @@ public class PSDirectTransformAllClass {
 			}
 		}
 		return res.toArray(new Integer[res.size()]);
-	}
-
-	protected static String toLogStr(int[] p, double accuracy, double error) {
-
-		StringBuffer sb = new StringBuffer();
-		if (NumerosityReductionStrategy.MINDIST.index() == p[3]) {
-			sb.append("MINDIST, ");
-		} else if (NumerosityReductionStrategy.EXACT.index() == p[3]) {
-			sb.append("EXACT, ");
-		} else if (NumerosityReductionStrategy.NONE.index() == p[3]) {
-			sb.append("NOREDUCTION, ");
-		}
-		sb.append("window ").append(p[0]).append(COMMA);
-		sb.append("PAA ").append(p[1]).append(COMMA);
-		sb.append("alphabet ").append(p[2]).append(COMMA);
-		sb.append(" accuracy ").append(fmt.format(accuracy)).append(COMMA);
-		sb.append(" error ").append(fmt.format(error));
-
-		return sb.toString();
 	}
 
 }

@@ -8,7 +8,7 @@ public class DistMethods {
 
 	/**
 	 * Calculating the distance between time series and pattern.
-	 * 
+	 *
 	 * @param ts
 	 *            , a series of points for time series.
 	 * @param pValue
@@ -35,7 +35,7 @@ public class DistMethods {
 
 		for (int i = 0; i < lastStartP; i++) {
 			System.arraycopy(ts, i, slidingWindow, 0, patternLen);
-			
+
 			double tempDist = eculideanDistNormEAbandon(pValue,
 					slidingWindow, bestDist);
 			// double tempDist = dtwDist(pValue, slidingWindow);
