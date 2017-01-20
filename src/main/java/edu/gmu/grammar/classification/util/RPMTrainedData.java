@@ -13,8 +13,8 @@ import java.util.Map;
  * Created by David Fleming on 12/2/16.
  */
 public class RPMTrainedData {
-    public int paa;
     public int windowSize;
+    public int paa;
     public int alphabet;
 
     public BestSelectedPatterns[] bestSelectedPatternsAllClass;
@@ -45,7 +45,10 @@ public class RPMTrainedData {
     public String toString() {
         StringBuilder output = new StringBuilder();
         output.append("Train Data Path: " + this.training_data_path + "\n");
-        output.append("Best Patterns All Classes");
+        output.append("Windows Size: " + this.windowSize + "\n");
+        output.append("PAA: " + this.paa + "\n");
+        output.append("Alphabet: " + this.alphabet + "\n");
+        output.append("Best Patterns All Classes: \n");
         TSPattern[] patterns = this.finalPatterns();
         for(int i = 0; i < patterns.length; i++) {
             output.append(patterns[i].toString() + "\n");

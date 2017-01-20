@@ -81,31 +81,18 @@ public class GCProcessMultiClass {
 		return transformedTS;
 	}
 
-	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls, String dataName,
-											  Map<String, List<double[]>> trainData, Map<String, List<double[]>> testData,
-											  GrammarIndcutionMethod giMethod) {
-		this.doClassifyTransformedMultiCls(bestSelectedPatternsAllCls, dataName,
-				trainData, testData, giMethod, null);
-	}
-
-	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls, String dataName,
+	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls,
 			Map<String, List<double[]>> trainData, Map<String, List<double[]>> testData,
 			GrammarIndcutionMethod giMethod,
 			ClassificationResults results) {
 
 		consoleLogger.debug("Classifing...");
 
-		// ArrayList<TimeSeriesTest> allTestData = buildTestData(testData);
 		TSPattern[] finalPatterns = combinePatterns(bestSelectedPatternsAllCls);
 
-		// finalPatterns = featureRemoveRedundence(finalPatterns,
-		// redundencyPer);
 		double[][] transformedTrainTS = transformTSWithPatternsTest(finalPatterns, trainData);
-		// int[] idx = featureSelection(transformedTrainTS);
 
-		// DataProcessor.writePatternToFile(finalPatterns, dataName);
 		double[][] transformedTestTS = transformTSWithPatternsTest(finalPatterns, testData);
-		// DataProcessor.writeArray(transformedTestTS);
 
 		double error;
 

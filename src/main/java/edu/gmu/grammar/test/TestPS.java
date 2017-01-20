@@ -14,14 +14,14 @@ public class TestPS{
 			//String[] inputArgs = { "CAMERA-DATA", "data/camera-data/camera-to-basestation-rpm", "data/camera-data/camera-to-basestation-rpm-test" };
 			//testThree(inputArgs);
 			PSDirectTransformAllClass testing = new PSDirectTransformAllClass();
-			RPMTrainedData output = testing.RPMTrain("CBF", "data/CBF/CBF_TRAIN");
-			ClassificationResults testoutput =  testing.RPMTestData("CBF", "data/CBF/CBF_TEST");
+			//RPMTrainedData output = testing.RPMTrain("data/CBF/CBF_TRAIN");
+			//ClassificationResults testoutput =  testing.RPMTestData("data/CBF/CBF_TEST");
 			//RPMTrainedData output = PSDirectTransformAllClass.RPMTrain("TOR", "data/TOR/TOR_TRAIN_ONE_EIGHTY");
 			//PSDirectTransformAllClass.RPMTestData("TOR", "data/TOR/TOR_TEST_ONE_EIGHTY");
 			//RPMTrainedData output = PSDirectTransformAllClass.RPMTrain("CAMERA-DATA", "data/camera-data/camera-to-basestation-rpm");
 			//PSDirectTransformAllClass.RPMTestData("CAMERA-DATA", "data/camera-data/camera-to-basestation-rpm-test");
-			System.out.println(output);
-			System.out.println(testoutput);
+			//System.out.println(output);
+			//System.out.println(testoutput);
 			// testThree(initialParamsTF_alarm);
 		} catch (Exception e) {
 			e.printStackTrace();
