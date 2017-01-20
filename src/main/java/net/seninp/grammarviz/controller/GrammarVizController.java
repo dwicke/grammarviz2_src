@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Observable;
+import java.util.logging.Level;
 import javax.swing.JFileChooser;
 import net.seninp.grammarviz.model.GrammarVizMessage;
 import net.seninp.grammarviz.model.GrammarVizModel;
@@ -113,6 +114,33 @@ public class GrammarVizController extends Observable implements ActionListener {
       }
     };
     return loadDataActionListener;
+  }
+
+  public ActionListener getRPMTrainListener() {
+    ActionListener RPMTrainListener = new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        model.RPMTrain();
+      }
+    };
+
+    return RPMTrainListener;
+  }
+
+  public ActionListener getRPMTestListener() {
+    ActionListener RPMTestListener = new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select Test Data File");
+
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+          File file = fileChooser.getSelectedFile();
+
+          // Run RPM Testing on the selected file
+          model.RPMTest(file.getAbsolutePath());
+        }
+      }
+    };
+    return RPMTestListener;
   }
 
   @Override

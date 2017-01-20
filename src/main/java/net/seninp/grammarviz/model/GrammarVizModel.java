@@ -17,6 +17,10 @@ import java.util.Arrays;
 import java.util.Observable;
 import java.util.TreeMap;
 import java.util.HashMap;
+
+import edu.gmu.grammar.classification.util.ClassificationResults;
+import edu.gmu.grammar.classification.util.PSDirectTransformAllClass;
+import edu.gmu.grammar.classification.util.RPMTrainedData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.seninp.gi.GIAlgorithm;
@@ -57,6 +61,11 @@ public class GrammarVizModel extends Observable {
   /** Data structure that keeps the chart data. */
   private GrammarVizChartData chartData;
 
+  /** RPM Object **/
+  private PSDirectTransformAllClass RPM;
+  private boolean enableRPM = false;
+  private String[] RPMLabels;
+
   // static block - we instantiate the logger
   //
   private static final Logger LOGGER = LoggerFactory.getLogger(GrammarVizModel.class);
@@ -91,24 +100,18 @@ public class GrammarVizModel extends Observable {
 
   }
 
-  /**
-   * Load the data which is supposedly in the file which is selected as the data source.
-   * 
-   * @param limitStr the limit of lines to read.
-   */
-  public synchronized void loadData(String limitStr) {
-
+  private double[][] loadDataPrivate(String limitStr, String fileName) {
     // check if everything is ready
-    if ((null == this.dataFileName) || this.dataFileName.isEmpty()) {
+    if ((null == fileName) || fileName.isEmpty()) {
       this.log("unable to load data - no data source selected yet");
-      return;
+      return null;
     }
 
     // make sure the path exists
-    Path path = Paths.get(this.dataFileName);
+    Path path = Paths.get(fileName);
     if (!(Files.exists(path))) {
-      this.log("file " + this.dataFileName + " doesn't exist.");
-      return;
+      this.log("file " + fileName + " doesn't exist.");
+      return null;
     }
 
     // read the input
@@ -131,6 +134,7 @@ public class GrammarVizModel extends Observable {
       // read by the line in the loop from reader
       String line = null;
       long lineCounter = 0;
+      this.enableRPM = false;
 
       while ((line = reader.readLine()) != null) {
 
@@ -138,6 +142,16 @@ public class GrammarVizModel extends Observable {
 
         if(0 == lineCounter)
         {
+          if(lineSplit[0].compareTo("#") == 0) {
+            this.log("Found RPM Data");
+            this.enableRPM = true;
+            ArrayList<String> labels = new ArrayList<String>();
+            for(int i = 1; i < lineSplit.length; i++) {
+              labels.add(lineSplit[i]);
+            }
+            this.RPMLabels = labels.toArray(new String[labels.size()]);
+            continue;
+          }
           data = new ArrayList<ArrayList<Double> >();
           for (int i = 0; i < lineSplit.length; i++) {
             data.add(new ArrayList<Double>());
@@ -145,7 +159,7 @@ public class GrammarVizModel extends Observable {
         }
 
         if (lineSplit.length < data.size()) {
-          this.log("line " + (lineCounter+1) + " of file " + this.dataFileName + " contains too few data points.");
+          this.log("line " + (lineCounter+1) + " of file " + fileName + " contains too few data points.");
         }
 
         // we read only first column
@@ -166,24 +180,36 @@ public class GrammarVizModel extends Observable {
     catch (Exception e) {
       String stackTrace = StackTrace.toString(e);
       System.err.println(StackTrace.toString(e));
-      this.log("error while trying to read data from " + this.dataFileName + ":\n" + stackTrace);
+      this.log("error while trying to read data from " + fileName + ":\n" + stackTrace);
     }
     finally {
       assert true;
     }
 
+    double[][] output = null;
     // convert to simple doubles array and clean the variable
     if (!(data.isEmpty())) {
-      this.ts = new double[data.size()][data.get(0).size()];
+      output = new double[data.size()][data.get(0).size()];
       // this.ts[0] = new double[data.get(0).size()];
 
       for (int i = 0; i < data.size(); i++) {
         for (int j = 0; j < data.get(0).size(); j++) {
-          this.ts[i][j] = data.get(i).get(j);
+          output[i][j] = data.get(i).get(j);
         }
       }
     }
     data = new ArrayList<ArrayList<Double> >();
+    return output;
+  }
+
+  /**
+   * Load the data which is supposedly in the file which is selected as the data source.
+   * 
+   * @param limitStr the limit of lines to read.
+   */
+  public synchronized void loadData(String limitStr) {
+
+    this.ts = loadDataPrivate(limitStr, this.dataFileName);
 
     LOGGER.debug("loaded " + this.ts[0].length + " points....");
 
@@ -193,13 +219,17 @@ public class GrammarVizModel extends Observable {
     // and send the timeseries
     setChanged();
     notifyObservers(new GrammarVizMessage(GrammarVizMessage.TIME_SERIES_MESSAGE, this.ts));
+    // and if RPM data was found, enable RPM mode
+    if(this.enableRPM) {
+      setChanged();
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_DATA_MESSAGE, this.RPMLabels));
+    }
 
   }
 
   /**
    * converts multiple SAXRecords in to a single one
-   * 
-   * @param the records to merge.
+   *
    */
   private SAXRecords mergeRecords(SAXRecords records[]) {
 
@@ -391,6 +421,40 @@ public class GrammarVizModel extends Observable {
 
       setChanged();
       notifyObservers(new GrammarVizMessage(GrammarVizMessage.CHART_MESSAGE, this.chartData));
+    }
+  }
+
+  public synchronized void RPMTrain() {
+    this.RPM = new PSDirectTransformAllClass();
+    this.log("Training...");
+    try {
+      RPMTrainedData results = this.RPM.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
+      String[] param = new String[3];
+      param[0] = String.valueOf(results.windowSize);
+      param[1] = String.valueOf(results.paa);
+      param[2] = String.valueOf(results.alphabet);
+      setChanged();
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_PARAM_UPDATE_MESSAGE, param));
+      this.log("RPM Training Results: " + results.toString());
+    } catch (Exception e) {
+      this.log("error while training RPM model " + StackTrace.toString(e));
+      e.printStackTrace();
+    }
+  }
+
+  public synchronized void RPMTest(String filename) {
+    this.log("Testing Model using " + filename + "...");
+    try {
+      double[][] testData = loadDataPrivate("0", filename);
+      if(this.enableRPM) {
+        ClassificationResults results = this.RPM.RPMTestData(filename, testData, this.RPMLabels);
+        this.log("RPM Testing Results: " + results.toString());
+      } else {
+        this.log("Not RPM Data");
+      }
+    } catch (Exception e) {
+      this.log("error while testing RPM model " + StackTrace.toString(e));
+      e.printStackTrace();
     }
   }
 

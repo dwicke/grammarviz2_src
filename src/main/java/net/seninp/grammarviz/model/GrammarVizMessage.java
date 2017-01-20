@@ -23,6 +23,12 @@ public class GrammarVizMessage {
   /** The data file name message key. */
   public static final String MAIN_CHART_CLICKED_MESSAGE = "main_chart_clicked_message";
 
+  /** The RPM data message Key */
+  public static final String RPM_DATA_MESSAGE = "rpm_data_message";
+
+  /** The RPM Window Size, PAA, Alphabet (Parameters) update message jey */
+  public static final String RPM_PARAM_UPDATE_MESSAGE = "rpm_param_update_message";
+
   /** The key storage. */
   private String type;
 

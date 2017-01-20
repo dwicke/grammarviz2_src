@@ -817,7 +817,6 @@ public class GrammarVizView implements Observer, ActionListener {
             modelLoadButton.setEnabled(true);
             guessParametersButton.setEnabled(true);
             discretizeButton.setEnabled(true);
-            trainButton.setEnabled(true);
           }
         };
         SwingUtilities.invokeLater(clearPanels);
@@ -857,6 +856,32 @@ public class GrammarVizView implements Observer, ActionListener {
         frame.revalidate();
         frame.repaint();
       }
+      // Enable RPM when RPM data was loaded
+      else if (GrammarVizMessage.RPM_DATA_MESSAGE.equalsIgnoreCase(message.getType())) {
+        Runnable enableRPM = new Runnable() {
+          @Override
+          public void run() {
+                  trainButton.setEnabled(true);
+          }
+        };
+        SwingUtilities.invokeLater(enableRPM);
+
+      }
+      // Return Parameters from RPM Training and load them into the GUI
+      else if (GrammarVizMessage.RPM_PARAM_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
+        Runnable updateParam = new Runnable() {
+          @Override
+          public void run() {
+            String[] updatedParam = (String[]) message.getPayload();
+            SAXwindowSizeField.setText(updatedParam[0]);
+            SAXpaaSizeField.setText(updatedParam[1]);
+            SAXalphabetSizeField.setText(updatedParam[2]);
+            saxParametersPane.revalidate();
+            saxParametersPane.repaint();
+          }
+        };
+        SwingUtilities.invokeLater(updateParam);
+      }
     }
 
   }
@@ -895,22 +920,25 @@ public class GrammarVizView implements Observer, ActionListener {
       controller.getBrowseFilesListener().actionPerformed(null);
     }
 
-    if (LOAD_MODEL.equals(command)) {
+    if (LOAD_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "load model action performed");
       JOptionPane.showMessageDialog(null, "Implement me");
     }
 
-    if (TRAIN_MODEL.equals(command)) {
+    if (TRAIN_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "train model action performed");
-      JOptionPane.showMessageDialog(null, "Implement me");
+      //JOptionPane.showMessageDialog(null, "Implement me");
+      this.controller.getRPMTrainListener().actionPerformed(new ActionEvent(this, 0, null));
+      this.testButton.setEnabled(true);
     }
 
-    if (TEST_MODEL.equals(command)) {
+    if (TEST_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "test model action performed");
-      JOptionPane.showMessageDialog(null, "Implement me");
+      //JOptionPane.showMessageDialog(null, "Implement me");
+      this.controller.getRPMTestListener().actionPerformed(new ActionEvent(this, 0, null));
     }
 
-    if (SAVE_MODEL.equals(command)) {
+    if (SAVE_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "save model action performed");
       JOptionPane.showMessageDialog(null, "Implement me");
     }
@@ -1037,7 +1065,6 @@ public class GrammarVizView implements Observer, ActionListener {
       this.guessParametersButton.setText("Guess");
       this.guessParametersButton.addActionListener(this);
       this.discretizeButton.setEnabled(true);
-      this.trainButton.setEnabled(true);
     }
 
     else if (FIND_PERIODICITY.equalsIgnoreCase(command)) {
@@ -1202,7 +1229,6 @@ public class GrammarVizView implements Observer, ActionListener {
     this.modelLoadButton.setEnabled(true);
     this.guessParametersButton.setEnabled(true);
     this.discretizeButton.setEnabled(true);
-    this.trainButton.setEnabled(false);
     this.findAnomaliesButton.setEnabled(true);
     this.displayChartButton.setEnabled(true);
     this.clusterRulesButton.setEnabled(true);
