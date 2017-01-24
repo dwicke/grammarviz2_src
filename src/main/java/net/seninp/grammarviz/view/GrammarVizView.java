@@ -33,6 +33,10 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
+
+import edu.gmu.grammar.classification.util.ClassificationResults;
+import edu.gmu.grammar.classification.util.RPMTrainedData;
+import net.seninp.grammarviz.logic.RPMHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.miginfocom.swing.MigLayout;
@@ -173,6 +177,7 @@ public class GrammarVizView implements Observer, ActionListener {
   private PackedRulesPanel packedRulesPane;
   private RulesPeriodicityPanel rulesPeriodicityPane;
   private GrammarVizAnomaliesPanel anomaliesPane;
+  private GrammarVizRPMPanel rpmPanel;
 
   // rule(s) charting auxiliary panel
   //
@@ -646,6 +651,13 @@ public class GrammarVizView implements Observer, ActionListener {
     tabbedRulesPane.addTab("GrammarViz anomalies", null, anomaliesPane,
         "Shows anomalous subsequences");
 
+    // now add the RPM Classification Panel
+    //
+    rpmPanel = new GrammarVizRPMPanel();
+    MigLayout rpmPanelLayout = new MigLayout(",insets 0 0 0 0", "[fill,grow]", "[fill,grow]");
+    rpmPanel.setLayout(rpmPanelLayout);
+    tabbedRulesPane.addTab("RPM Classification", null, rpmPanel, "Show RPM Classification Statistics");
+
     // now format the tabbed pane
     //
     tabbedRulesPane.setBorder(
@@ -796,9 +808,7 @@ public class GrammarVizView implements Observer, ActionListener {
         };
         SwingUtilities.invokeLater(doSetPath);
 
-      }
-
-      else if (GrammarVizMessage.TIME_SERIES_MESSAGE.equalsIgnoreCase(message.getType())) {
+      } else if (GrammarVizMessage.TIME_SERIES_MESSAGE.equalsIgnoreCase(message.getType())) {
 
         // setting the chart first
         //
@@ -861,29 +871,41 @@ public class GrammarVizView implements Observer, ActionListener {
         Runnable enableRPM = new Runnable() {
           @Override
           public void run() {
-                  trainButton.setEnabled(true);
+            trainButton.setEnabled(true);
           }
         };
         SwingUtilities.invokeLater(enableRPM);
 
       }
-      // Return Parameters from RPM Training and load them into the GUI
-      else if (GrammarVizMessage.RPM_PARAM_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
+      // Return Results from RPM Training and load them into the GUI
+      else if (GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
         Runnable updateParam = new Runnable() {
           @Override
           public void run() {
-            String[] updatedParam = (String[]) message.getPayload();
-            SAXwindowSizeField.setText(updatedParam[0]);
-            SAXpaaSizeField.setText(updatedParam[1]);
-            SAXalphabetSizeField.setText(updatedParam[2]);
+            RPMHandler rpmHandler = controller.getSession().rpmHandler = (RPMHandler) message.getPayload();
+            SAXwindowSizeField.setText(String.valueOf(rpmHandler.getWindowSize()));
+            SAXpaaSizeField.setText(String.valueOf(rpmHandler.getPaa()));
+            SAXalphabetSizeField.setText(String.valueOf(rpmHandler.getAlphabet()));
             saxParametersPane.revalidate();
             saxParametersPane.repaint();
           }
         };
         SwingUtilities.invokeLater(updateParam);
       }
+      // Return Results from RPM Classification and load them into the GUI
+      else if (GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
+        this.rpmPanel.setClassificationResults(this.controller.getSession());
+        
+        Runnable updateClassification = new Runnable() {
+          @Override
+          public void run() {
+            rpmPanel.updateRPMStatistics();
+            rpmPanel.resetPanel();
+          }
+        };
+        SwingUtilities.invokeLater(updateClassification);
+      }
     }
-
   }
 
   @Override
@@ -936,6 +958,18 @@ public class GrammarVizView implements Observer, ActionListener {
       log(Level.INFO, "test model action performed");
       //JOptionPane.showMessageDialog(null, "Implement me");
       this.controller.getRPMTestListener().actionPerformed(new ActionEvent(this, 0, null));
+      //try {
+      //  this.controller.getSession().rpmHandler.addObserver(this);
+
+      //  this.rpmPanel.updateRPMStatistics();
+      //  this.rpmPanel.resetPanel();
+
+      //  this.controller.getSession().rpmHandler.deleteObserver(this);
+      //}
+      //catch (Exception e) {
+      //  String errorTrace = StackTrace.toString(e);
+      //  log(Level.ALL, errorTrace);
+      //}
     }
 
     if (SAVE_MODEL.equalsIgnoreCase(command)) {

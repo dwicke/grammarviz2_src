@@ -26,8 +26,11 @@ public class GrammarVizMessage {
   /** The RPM data message Key */
   public static final String RPM_DATA_MESSAGE = "rpm_data_message";
 
-  /** The RPM Window Size, PAA, Alphabet (Parameters) update message jey */
-  public static final String RPM_PARAM_UPDATE_MESSAGE = "rpm_param_update_message";
+  /** The RPM Training Results update message Key */
+  public static final String RPM_TRAIN_RESULTS_UPDATE_MESSAGE = "rpm_train_results_update_message";
+
+  /** The RPM Classification Results update message Key */
+  public static final String RPM_CLASS_RESULTS_UPDATE_MESSAGE = "rpm_class_results_update_message";
 
   /** The key storage. */
   private String type;

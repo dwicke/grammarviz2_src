@@ -15,12 +15,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Observable;
-import java.util.TreeMap;
 import java.util.HashMap;
 
 import edu.gmu.grammar.classification.util.ClassificationResults;
 import edu.gmu.grammar.classification.util.PSDirectTransformAllClass;
 import edu.gmu.grammar.classification.util.RPMTrainedData;
+import net.seninp.grammarviz.logic.RPMHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.seninp.gi.GIAlgorithm;
@@ -36,7 +36,6 @@ import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 import net.seninp.jmotif.sax.SAXProcessor;
 import net.seninp.jmotif.sax.alphabet.NormalAlphabet;
 import net.seninp.jmotif.sax.datastructure.SAXRecords;
-import net.seninp.jmotif.sax.datastructure.SAXRecord;
 import net.seninp.jmotif.sax.parallel.ParallelSAXImplementation;
 import net.seninp.util.StackTrace;
 
@@ -62,7 +61,7 @@ public class GrammarVizModel extends Observable {
   private GrammarVizChartData chartData;
 
   /** RPM Object **/
-  private PSDirectTransformAllClass RPM;
+  private RPMHandler rpmHandler;
   private boolean enableRPM = false;
   private String[] RPMLabels;
 
@@ -425,17 +424,15 @@ public class GrammarVizModel extends Observable {
   }
 
   public synchronized void RPMTrain() {
-    this.RPM = new PSDirectTransformAllClass();
+    if(this.rpmHandler == null) {
+      this.rpmHandler = new RPMHandler();
+    }
     this.log("Training...");
     try {
-      RPMTrainedData results = this.RPM.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
-      String[] param = new String[3];
-      param[0] = String.valueOf(results.windowSize);
-      param[1] = String.valueOf(results.paa);
-      param[2] = String.valueOf(results.alphabet);
+      this.rpmHandler.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
       setChanged();
-      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_PARAM_UPDATE_MESSAGE, param));
-      this.log("RPM Training Results: " + results.toString());
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
+      //this.log("RPM Training Results: " + results.toString());
     } catch (Exception e) {
       this.log("error while training RPM model " + StackTrace.toString(e));
       e.printStackTrace();
@@ -447,8 +444,10 @@ public class GrammarVizModel extends Observable {
     try {
       double[][] testData = loadDataPrivate("0", filename);
       if(this.enableRPM) {
-        ClassificationResults results = this.RPM.RPMTestData(filename, testData, this.RPMLabels);
-        this.log("RPM Testing Results: " + results.toString());
+        this.rpmHandler.RPMTestData(filename, testData, this.RPMLabels);
+        setChanged();
+        notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE, null));
+        //this.log("RPM Testing Results: " + results.toString());
       } else {
         this.log("Not RPM Data");
       }
