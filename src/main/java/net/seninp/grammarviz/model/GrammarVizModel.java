@@ -446,7 +446,7 @@ public class GrammarVizModel extends Observable {
       if(this.enableRPM) {
         this.rpmHandler.RPMTestData(filename, testData, this.RPMLabels);
         setChanged();
-        notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE, null));
+        notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
         //this.log("RPM Testing Results: " + results.toString());
       } else {
         this.log("Not RPM Data");

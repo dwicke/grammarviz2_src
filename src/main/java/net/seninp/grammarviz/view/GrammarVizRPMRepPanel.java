@@ -1,11 +1,8 @@
 package net.seninp.grammarviz.view;
 
-import com.sun.javafx.collections.ListListenerHelper;
-import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
 import net.seninp.grammarviz.session.UserSession;
-import net.seninp.grammarviz.view.table.RPMTableColumns;
-import net.seninp.grammarviz.view.table.RPMTableModel;
-import net.seninp.grammarviz.view.table.GrammarvizRulesTableColumns;
+import net.seninp.grammarviz.view.table.RPMRepTableModel;
+import net.seninp.grammarviz.view.table.RPMRepTableColumns;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
 import org.slf4j.Logger;
@@ -20,22 +17,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Created by david on 1/23/17.
+ * Created by David Fleming on 1/24/17.
  */
-public class GrammarVizRPMPanel extends JPanel implements ListSelectionListener {
+public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListener {
 
     /** Fancy Serial */
-    private static final long serialVersionUID = -6017992967964000474L;
+    private static final long serialVersionUID = -2040422995980516094L;
 
-    public static final String FIRING_PROPERTY_RPM = "selectedRow_rpm";
+    public static final String FIRING_PROPERTY_RPM_REP = "selectedRow_rpm_rep";
 
     private UserSession session;
 
-    private RPMTableModel RPMTableModel;
+    private net.seninp.grammarviz.view.table.RPMRepTableModel RPMRepTableModel;
 
-    private JXTable RPMTable;
+    private JXTable RPMRepTable;
 
-    private JScrollPane RPMPane;
+    private JScrollPane RPMRepPane;
 
     private ArrayList<String> selectedResults;
 
@@ -45,16 +42,16 @@ public class GrammarVizRPMPanel extends JPanel implements ListSelectionListener 
     //
     private static final Logger LOGGER = LoggerFactory.getLogger(GrammarRulesPanel.class);
 
-    public GrammarVizRPMPanel() {
+    public GrammarVizRPMRepPanel() {
         super();
-        this.RPMTableModel = new RPMTableModel();
-        this.RPMTable = new JXTable() {
-            private static final long serialVersionUID = 4L;
+        this.RPMRepTableModel = new RPMRepTableModel();
+        this.RPMRepTable = new JXTable() {
+            private static final long serialVersionUID = 5L;
 
             @Override
             protected JTableHeader createDefaultTableHeader() {
                 return new JXTableHeader(columnModel) {
-                    private static final long serialVersionUID = 2L;
+                    private static final long serialVersionUID = 3L;
 
                     @Override
                     public void updateUI() {
@@ -69,52 +66,54 @@ public class GrammarVizRPMPanel extends JPanel implements ListSelectionListener 
             }
         };
 
-        this.RPMTable.setModel(this.RPMTableModel);
-        this.RPMTable.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        this.RPMTable.setShowGrid(false);
+        this.RPMRepTable.setModel(this.RPMRepTableModel);
+        this.RPMRepTable.getSelectionModel().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        this.RPMRepTable.setShowGrid(false);
+
+        this.RPMRepTable.getSelectionModel().addListSelectionListener(this);
 
         @SuppressWarnings("unused")
         org.jdesktop.swingx.renderer.DefaultTableRenderer renderer =
-                (org.jdesktop.swingx.renderer.DefaultTableRenderer) RPMTable.getDefaultRenderer(String.class);
+                (org.jdesktop.swingx.renderer.DefaultTableRenderer) RPMRepTable.getDefaultRenderer(String.class);
 
-        TableRowSorter<RPMTableModel> sorter = new TableRowSorter<RPMTableModel>(this.RPMTableModel);
-        this.RPMTable.setRowSorter(sorter);
+        TableRowSorter<RPMRepTableModel> sorter = new TableRowSorter<RPMRepTableModel>(this.RPMRepTableModel);
+        this.RPMRepTable.setRowSorter(sorter);
 
-        this.RPMPane = new JScrollPane(this.RPMTable);
+        this.RPMRepPane = new JScrollPane(this.RPMRepTable);
     }
 
     public void resetPanel() {
         // cleanup all the content
         this.removeAll();
-        this.add(this.RPMPane);
+        this.add(this.RPMRepPane);
         this.validate();
         this.repaint();
     }
 
-    public RPMTableModel getRPMTableModel() {return this.RPMTableModel; }
+    public RPMRepTableModel getRPMRepTableModel() {return this.RPMRepTableModel; }
 
-    public JTable getRPMTable() {return this.RPMTable; }
+    public JTable getRPMRepTable() {return this.RPMRepTable; }
 
     @Override
     public void valueChanged(ListSelectionEvent arg) {
         if (!arg.getValueIsAdjusting() && this.acceptListEvents) {
-            int[] rows = this.RPMTable.getSelectedRows();
+            int[] rows = this.RPMRepTable.getSelectedRows();
             LOGGER.debug("Selected ROWS: " + Arrays.toString(rows));
             ArrayList<String> rules = new ArrayList<String>(rows.length);
             for (int i = 0; i < rows.length; i++) {
                 int ridx = rows[i];
                 String rule = String.valueOf(
-                        this.RPMTable.getValueAt(ridx, RPMTableColumns.RPM_CLASSES.ordinal()));
+                        this.RPMRepTable.getValueAt(ridx, RPMRepTableColumns.RPM_CLASS_PATTERN_NUMBER.ordinal()));
                 rules.add(rule);
             }
-            this.firePropertyChange(FIRING_PROPERTY_RPM, this.selectedResults, rules);
+            this.firePropertyChange(FIRING_PROPERTY_RPM_REP, this.selectedResults, rules);
         }
 
     }
 
     public void updateRPMStatistics() {
         this.acceptListEvents = false;
-        this.RPMTableModel.update(this.session.rpmHandler.getResults());
+        this.RPMRepTableModel.update(this.session.rpmHandler.getRepresentativePatterns());
         this.acceptListEvents = true;
     }
 
@@ -122,12 +121,11 @@ public class GrammarVizRPMPanel extends JPanel implements ListSelectionListener 
         this.acceptListEvents = false;
         this.removeAll();
         this.session = null;
-        RPMTableModel.update(null);
+        RPMRepTableModel.update(null);
         this.validate();
         this.repaint();
         this.acceptListEvents = true;
     }
 
     public void setClassificationResults(UserSession session) {this.session = session; }
-
 }

@@ -7,6 +7,9 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.JPanel;
+
+import com.sun.org.apache.xerces.internal.xni.grammars.Grammar;
+import edu.gmu.grammar.patterns.TSPattern;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
@@ -59,7 +62,7 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
    * Create the chart for the original time series.
    * 
    * @return a JFreeChart object of the chart
-   * @throws TSException
+   * @throws Exception
    */
   private void chartIntervals(ArrayList<double[]> intervals) throws Exception {
 
@@ -127,7 +130,7 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
    * @param index
    * @param series
    * @return
-   * @throws TSException
+   * @throws Exception
    */
   private XYSeries toSeries(int index, double[] series) throws Exception {
     double[] normalizedSubseries = tp.znorm(series, controller.getSession().normalizationThreshold);
@@ -141,7 +144,7 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
   /**
    * Highlight the original time series sequences of a rule.
    * 
-   * @param index index of the rule in the sequitur table.
+   * @param newlySelectedRaw index of the rule in the sequitur table.
    */
   protected void chartIntervalsForRule(ArrayList<String> newlySelectedRaw) {
     try {
@@ -163,7 +166,7 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
   /**
    * Highlight the original time series sequences of a sub-sequences class.
    * 
-   * @param index index of the class in the sub-sequences class table.
+   * @param newlySelectedRaw index of the class in the sub-sequences class table.
    */
   protected void chartIntervalsForClass(ArrayList<String> newlySelectedRaw) {
     try {
@@ -193,6 +196,25 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
       for (String str : newlySelectedAnomalies) {
         DiscordRecord dr = this.session.chartData.getAnomalies().get(Integer.valueOf(str));
         intervals.add(extractInterval(dr.getPosition(), dr.getPosition() + dr.getLength()));
+      }
+      chartIntervals(intervals);
+    }
+    catch (Exception e) {
+      System.err.println(StackTrace.toString(e));
+    }
+  }
+
+  /**
+   * Charts a Representative pattern that was found by RPM
+   *
+   * @param newlySelectedPatterns
+   */
+  private void chartRPMRepPattern(ArrayList<String> newlySelectedPatterns) {
+    try {
+      ArrayList<double[]> intervals = new ArrayList<double[]>();
+      TSPattern[] patterns = this.session.rpmHandler.getRepresentativePatterns();
+      for (String str : newlySelectedPatterns) {
+        intervals.add(patterns[Integer.valueOf(str)].getPatternTS());
       }
       chartIntervals(intervals);
     }
@@ -253,6 +275,13 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
       @SuppressWarnings("unchecked")
       ArrayList<String> newlySelectedRaw = (ArrayList<String>) evt.getNewValue();
       chartIntervalForAnomaly(newlySelectedRaw);
+    }
+    else if (GrammarVizRPMRepPanel.FIRING_PROPERTY_RPM_REP
+            .equalsIgnoreCase(evt.getPropertyName())) {
+      System.out.println("Updating Side graph with rep pattern");
+      @SuppressWarnings("unchecked")
+      ArrayList<String> newlySelectedRaw = (ArrayList<String>) evt.getNewValue();
+      chartRPMRepPattern(newlySelectedRaw);
     }
 
   }

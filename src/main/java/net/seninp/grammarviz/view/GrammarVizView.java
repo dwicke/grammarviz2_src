@@ -178,6 +178,7 @@ public class GrammarVizView implements Observer, ActionListener {
   private RulesPeriodicityPanel rulesPeriodicityPane;
   private GrammarVizAnomaliesPanel anomaliesPane;
   private GrammarVizRPMPanel rpmPanel;
+  private GrammarVizRPMRepPanel rpmRepPanel;
 
   // rule(s) charting auxiliary panel
   //
@@ -299,6 +300,8 @@ public class GrammarVizView implements Observer, ActionListener {
     //
     anomaliesPane.addPropertyChangeListener(dataChartPane);
     anomaliesPane.addPropertyChangeListener(ruleChartPane);
+
+    rpmRepPanel.addPropertyChangeListener(ruleChartPane);
 
     // set the main panel layout
     MigLayout mainFrameLayout = new MigLayout("", "[fill,grow,center]",
@@ -651,6 +654,13 @@ public class GrammarVizView implements Observer, ActionListener {
     tabbedRulesPane.addTab("GrammarViz anomalies", null, anomaliesPane,
         "Shows anomalous subsequences");
 
+    // now add the RPM Representative Panel
+    //
+    rpmRepPanel = new GrammarVizRPMRepPanel();
+    MigLayout rpmRepPanelLayout = new MigLayout(",insets 0 0 0 0", "[fill,grow]", "[fill,grow]");
+    rpmRepPanel.setLayout(rpmRepPanelLayout);
+    tabbedRulesPane.addTab("RPM Representative Classes", null, rpmRepPanel, "Show RPM Representative Classes");
+
     // now add the RPM Classification Panel
     //
     rpmPanel = new GrammarVizRPMPanel();
@@ -879,15 +889,21 @@ public class GrammarVizView implements Observer, ActionListener {
       }
       // Return Results from RPM Training and load them into the GUI
       else if (GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
+        controller.getSession().rpmHandler = (RPMHandler) message.getPayload();
+        ruleChartPane.setChartData(this.controller.getSession());
+        this.rpmRepPanel.setClassificationResults(this.controller.getSession());
+
         Runnable updateParam = new Runnable() {
           @Override
           public void run() {
-            RPMHandler rpmHandler = controller.getSession().rpmHandler = (RPMHandler) message.getPayload();
+            RPMHandler rpmHandler = controller.getSession().rpmHandler;
             SAXwindowSizeField.setText(String.valueOf(rpmHandler.getWindowSize()));
             SAXpaaSizeField.setText(String.valueOf(rpmHandler.getPaa()));
             SAXalphabetSizeField.setText(String.valueOf(rpmHandler.getAlphabet()));
             saxParametersPane.revalidate();
             saxParametersPane.repaint();
+            rpmRepPanel.updateRPMStatistics();
+            rpmRepPanel.resetPanel();
           }
         };
         SwingUtilities.invokeLater(updateParam);
@@ -895,7 +911,7 @@ public class GrammarVizView implements Observer, ActionListener {
       // Return Results from RPM Classification and load them into the GUI
       else if (GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
         this.rpmPanel.setClassificationResults(this.controller.getSession());
-        
+
         Runnable updateClassification = new Runnable() {
           @Override
           public void run() {

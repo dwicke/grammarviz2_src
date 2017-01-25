@@ -3,6 +3,7 @@ package net.seninp.grammarviz.logic;
 import edu.gmu.grammar.classification.util.ClassificationResults;
 import edu.gmu.grammar.classification.util.PSDirectTransformAllClass;
 import edu.gmu.grammar.classification.util.RPMTrainedData;
+import edu.gmu.grammar.patterns.TSPattern;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +18,7 @@ public class RPMHandler {
     private String[] trainingLabels;
     private ClassificationResults testingResults;
     private String[] testingLabels;
+    private TSPattern[] finalPatterns;
 
     public RPMHandler() {
         this.RPM = new PSDirectTransformAllClass();
@@ -25,11 +27,16 @@ public class RPMHandler {
     public void RPMTrain(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.trainingLabels = labels;
         this.trainingResults = this.RPM.RPMTrain(filename, data, labels);
+        this.finalPatterns = this.trainingResults.finalPatterns();
     }
 
     public void RPMTestData(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.testingLabels = labels;
         this.testingResults = this.RPM.RPMTestData(filename, data, labels);
+    }
+
+    public TSPattern[] getRepresentativePatterns() {
+        return this.finalPatterns;
     }
 
     public String[][] getResults() {
