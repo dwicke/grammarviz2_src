@@ -119,7 +119,7 @@ public class GrammarVizController extends Observable implements ActionListener {
   public ActionListener getRPMTrainListener() {
     ActionListener RPMTrainListener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        model.RPMTrain();
+        model.RPMTrain(session.rpmNumberOfIterations);
       }
     };
 
@@ -140,7 +140,30 @@ public class GrammarVizController extends Observable implements ActionListener {
         }
       }
     };
+
     return RPMTestListener;
+  }
+
+  public ActionListener getRPMLoadListener() {
+    ActionListener rpmLoadListener = new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+
+      }
+    };
+
+    return rpmLoadListener;
+  }
+
+  public ActionListener getRPMSaveListener() {
+    ActionListener rpmSaveListener = new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+
+      }
+    };
+
+    return rpmSaveListener;
   }
 
   @Override

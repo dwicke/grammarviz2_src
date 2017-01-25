@@ -21,6 +21,12 @@ import java.util.*;
 
 public class PSDirectTransformAllClass {
 
+	// Default number of iterations for sampling
+	public static final int DEFAULT_NUMBER_OF_ITERATIONS = 5;
+
+	// Default strategy for sampling
+	public static final String DEFAULT_STRATEGY = "EXACT";
+
 	// the number formatter
 	private final DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(
 			Locale.US);
@@ -222,16 +228,14 @@ public class PSDirectTransformAllClass {
 								   double[][] data, String[] labels) throws IOException {
 		return this.RPMTrain(trainingDataFilePath,
 				data, labels,
-				// Default Strategy
-				"EXACT");
+				DEFAULT_STRATEGY);
 	}
 
 	public RPMTrainedData RPMTrain(String trainingDataFilePath,
 								   double[][] data, String[] labels,
 								   String strategy) throws IOException {
 		return this.RPMTrain(trainingDataFilePath, data, labels, strategy,
-				// Default Number of Iterations
-				5);
+				DEFAULT_NUMBER_OF_ITERATIONS);
 	}
 	public RPMTrainedData RPMTrain(String trainingDataFilePath,
 								   double[][] data, String[] labels,

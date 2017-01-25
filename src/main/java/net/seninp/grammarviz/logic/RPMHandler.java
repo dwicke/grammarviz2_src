@@ -19,14 +19,17 @@ public class RPMHandler {
     private ClassificationResults testingResults;
     private String[] testingLabels;
     private TSPattern[] finalPatterns;
+    private int numberOfIterations;
 
     public RPMHandler() {
         this.RPM = new PSDirectTransformAllClass();
+        this.numberOfIterations = PSDirectTransformAllClass.DEFAULT_NUMBER_OF_ITERATIONS;
     }
 
     public void RPMTrain(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.trainingLabels = labels;
-        this.trainingResults = this.RPM.RPMTrain(filename, data, labels);
+        this.trainingResults = this.RPM.RPMTrain(filename, data, labels, PSDirectTransformAllClass.DEFAULT_STRATEGY,
+                this.numberOfIterations);
         this.finalPatterns = this.trainingResults.finalPatterns();
     }
 
@@ -92,6 +95,10 @@ public class RPMHandler {
     public String[] getTestingLabels() {
         return this.testingLabels;
     }
+
+    public void setNumberOfIterations(int numberOfIterations) { this.numberOfIterations = numberOfIterations; }
+
+    public int getNumberOfIterations() {return this.numberOfIterations; }
 
     @Override
     public String toString() {

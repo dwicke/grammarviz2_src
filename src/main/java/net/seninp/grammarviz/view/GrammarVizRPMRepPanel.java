@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,9 +49,16 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
         this.RPMRepTableModel = new RPMRepTableModel();
         this.RPMRepTable = new JXTable() {
             private static final long serialVersionUID = 5L;
+            private DefaultTableCellRenderer defaultRenderer = new DefaultTableCellRenderer();
+            private DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+
+            {
+                leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
+            }
 
             @Override
             protected JTableHeader createDefaultTableHeader() {
+
                 return new JXTableHeader(columnModel) {
                     private static final long serialVersionUID = 3L;
 
@@ -58,12 +67,21 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
                         super.updateUI();
                         // need to do in updateUI to survive toggling of LAF
                         if (getDefaultRenderer() instanceof JLabel) {
-                            ((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.CENTER);
+                            ((JLabel) getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
                         }
                     }
                 };
             }
+
+            @Override
+            public TableCellRenderer getCellRenderer(int row, int col) {
+                if(col == 2) {
+                    return leftRenderer;
+                }
+
+                return defaultRenderer;
+            };
         };
 
         this.RPMRepTable.setModel(this.RPMRepTableModel);
@@ -78,8 +96,12 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
 
         TableRowSorter<RPMRepTableModel> sorter = new TableRowSorter<RPMRepTableModel>(this.RPMRepTableModel);
         this.RPMRepTable.setRowSorter(sorter);
+        this.RPMRepTable.setHorizontalScrollEnabled(true);
+
+
 
         this.RPMRepPane = new JScrollPane(this.RPMRepTable);
+        this.RPMRepPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
     public void resetPanel() {
@@ -114,6 +136,7 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
     public void updateRPMStatistics() {
         this.acceptListEvents = false;
         this.RPMRepTableModel.update(this.session.rpmHandler.getRepresentativePatterns());
+        this.RPMRepTable.packAll();
         this.acceptListEvents = true;
     }
 

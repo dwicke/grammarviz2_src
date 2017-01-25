@@ -162,6 +162,11 @@ public class GrammarVizView implements Observer, ActionListener {
   //
   private JPanel discretizePane;
   private JButton discretizeButton;
+
+  // RPM
+  //
+  private JLabel rpmIterationLabel;
+  private JTextField rpmIterationeField;
   private JPanel trainPane;
   private JButton trainButton;
   private JButton testButton;
@@ -330,7 +335,7 @@ public class GrammarVizView implements Observer, ActionListener {
 
     // Show frame
     frame.pack();
-    frame.setSize(new Dimension(1020, 840));
+    frame.setSize(new Dimension(1200, 840));
     frame.setVisible(true);
   }
 
@@ -573,6 +578,9 @@ public class GrammarVizView implements Observer, ActionListener {
 
 
     //  RPM train button and test buttons
+    rpmIterationLabel = new JLabel("Iterations");
+    rpmIterationeField = new JTextField(String.valueOf(this.controller.getSession().rpmNumberOfIterations), 2);
+    rpmIterationeField.setMinimumSize(rpmIterationeField.getPreferredSize());
     trainButton = new JButton("Train");
     trainButton.setMnemonic('R');
     trainButton.setActionCommand(TRAIN_MODEL);
@@ -589,6 +597,9 @@ public class GrammarVizView implements Observer, ActionListener {
     // insets: T, L, B, R.
     processPaneLayout = new MigLayout("insets 3 2 4 2", "5[]5", "[]");
     trainPane.setLayout(processPaneLayout);
+
+    trainPane.add(rpmIterationLabel);
+    trainPane.add(rpmIterationeField);
     trainPane.add(trainButton, "");
     trainPane.add(testButton, "");
   }
@@ -966,26 +977,16 @@ public class GrammarVizView implements Observer, ActionListener {
     if (TRAIN_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "train model action performed");
       //JOptionPane.showMessageDialog(null, "Implement me");
+      this.controller.getSession().rpmNumberOfIterations = Integer.valueOf(this.rpmIterationeField.getText());
       this.controller.getRPMTrainListener().actionPerformed(new ActionEvent(this, 0, null));
       this.testButton.setEnabled(true);
+      this.saveModelButton.setEnabled(true);
     }
 
     if (TEST_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "test model action performed");
       //JOptionPane.showMessageDialog(null, "Implement me");
       this.controller.getRPMTestListener().actionPerformed(new ActionEvent(this, 0, null));
-      //try {
-      //  this.controller.getSession().rpmHandler.addObserver(this);
-
-      //  this.rpmPanel.updateRPMStatistics();
-      //  this.rpmPanel.resetPanel();
-
-      //  this.controller.getSession().rpmHandler.deleteObserver(this);
-      //}
-      //catch (Exception e) {
-      //  String errorTrace = StackTrace.toString(e);
-      //  log(Level.ALL, errorTrace);
-      //}
     }
 
     if (SAVE_MODEL.equalsIgnoreCase(command)) {

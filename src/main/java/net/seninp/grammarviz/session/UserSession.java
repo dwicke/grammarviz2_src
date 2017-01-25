@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import edu.gmu.grammar.classification.util.ClassificationResults;
+import edu.gmu.grammar.classification.util.PSDirectTransformAllClass;
 import edu.gmu.grammar.classification.util.RPMTrainedData;
 import net.seninp.gi.GIAlgorithm;
 import net.seninp.grammarviz.logic.CoverageCountStrategy;
@@ -78,6 +79,7 @@ public class UserSession {
   // RPM Data Structure
   //
   public volatile RPMHandler rpmHandler;
+  public volatile int rpmNumberOfIterations;
 
   public UserSession() {
 
@@ -97,6 +99,8 @@ public class UserSession {
     this.giAlgorithm = DEFAULT_GI_ALGORITHM;
 
     this.countStrategy = DEFAULT_COUNT_STRATEGY;
+
+    this.rpmNumberOfIterations = PSDirectTransformAllClass.DEFAULT_NUMBER_OF_ITERATIONS;
 
     // attempt to fill the rule coverage name automatically
     //

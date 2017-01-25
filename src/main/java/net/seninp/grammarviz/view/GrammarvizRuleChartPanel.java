@@ -278,7 +278,6 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
     }
     else if (GrammarVizRPMRepPanel.FIRING_PROPERTY_RPM_REP
             .equalsIgnoreCase(evt.getPropertyName())) {
-      System.out.println("Updating Side graph with rep pattern");
       @SuppressWarnings("unchecked")
       ArrayList<String> newlySelectedRaw = (ArrayList<String>) evt.getNewValue();
       chartRPMRepPattern(newlySelectedRaw);

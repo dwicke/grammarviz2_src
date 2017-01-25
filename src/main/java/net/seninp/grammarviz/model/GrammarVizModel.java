@@ -423,12 +423,13 @@ public class GrammarVizModel extends Observable {
     }
   }
 
-  public synchronized void RPMTrain() {
+  public synchronized void RPMTrain(int numberOfIterations) {
     if(this.rpmHandler == null) {
       this.rpmHandler = new RPMHandler();
     }
     this.log("Training...");
     try {
+      this.rpmHandler.setNumberOfIterations(numberOfIterations);
       this.rpmHandler.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
       setChanged();
       notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
