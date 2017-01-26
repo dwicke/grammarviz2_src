@@ -1,9 +1,13 @@
 package edu.gmu.grammar.patterns;
 
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class BestSelectedPatterns {
+public class BestSelectedPatterns implements Serializable {
+
+	private static final long serialVersionUID = -5065401322294738867L;
+
 	private double minimalError;
 	private TSPattern[] bestSelectedPatterns;
 	private int[] bestParams;

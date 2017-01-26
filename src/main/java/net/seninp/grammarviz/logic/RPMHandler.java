@@ -9,6 +9,7 @@ import net.seninp.util.StackTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Observable;
@@ -61,10 +62,41 @@ public class RPMHandler extends Observable implements Runnable {
     }
 
     public synchronized void RPMLoadModel(String filename) {
+        RPMTrainedData rpmTrainedData = null;
+        try {
+            FileInputStream loadFile = new FileInputStream(filename);
+            ObjectInputStream loadStream = new ObjectInputStream(loadFile);
+            rpmTrainedData = (RPMTrainedData) loadStream.readObject();
+            loadStream.close();
+            loadFile.close();
+        } catch(ClassNotFoundException e) {
+            this.log("error " + filename + " is not a RPM Model");
+            e.printStackTrace();
+        } catch(Exception e) {
+            this.log("error while loading RPM model " + StackTrace.toString(e));
+            e.printStackTrace();
+        }
+
+        if(!(rpmTrainedData == null)) {
+            this.trainingResults = rpmTrainedData;
+            this.trainingFilename = rpmTrainedData.training_data_path;
+            this.finalPatterns = rpmTrainedData.finalPatterns();
+            this.numberOfIterations = rpmTrainedData.iterations_num;
+        }
 
     }
 
     public synchronized void RPMSaveModel(String filename) {
+        try {
+            FileOutputStream saveFile = new FileOutputStream(filename);
+            ObjectOutputStream saveStream = new ObjectOutputStream(saveFile);
+            saveStream.writeObject(this.trainingResults);
+            saveStream.close();
+            saveFile.close();
+        } catch(Exception e) {
+            this.log("error while saving RPM model " + StackTrace.toString(e));
+            e.printStackTrace();
+        }
 
     }
 
@@ -153,6 +185,11 @@ public class RPMHandler extends Observable implements Runnable {
 
     public synchronized void setTrainingLabels(String[] trainingLabels) {
         this.trainingLabels = trainingLabels;
+    }
+
+    public synchronized void forceRPMModelReload() {
+        this.trainingResults.trainData = this.RPM.convertGrammarVizData(this.trainingData, this.trainingLabels);
+        this.RPM.loadRPMTrain(this.trainingResults);
     }
 
     @Override

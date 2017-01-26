@@ -150,5 +150,5 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
         this.acceptListEvents = true;
     }
 
-    public void setClassificationResults(UserSession session) {this.session = session; }
+    public void setResults(UserSession session) {this.session = session; }
 }

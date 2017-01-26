@@ -1,20 +1,18 @@
 package edu.gmu.grammar.patterns;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Arrays;
 
-public class TSPattern implements Cloneable, Comparable<TSPattern> {
+public class TSPattern implements Cloneable, Comparable<TSPattern>, Serializable {
+
+	private static final long serialVersionUID = 4268364054811283654L;
 
 	private int frequency;
 	private double[] patternTS;
-	private int correctNN = 0;
-	private int wrongNN = 0;
 	private double error = 0;
 	private String label;
-	private ArrayList<double[]> patternsInClass = new ArrayList<double[]>();
-	private HashMap<String, Integer> wrongClass = new HashMap<String, Integer>();
-	private double nnDistSum;
 	private int fromTS;
 	private int startP;
 
@@ -30,13 +28,8 @@ public class TSPattern implements Cloneable, Comparable<TSPattern> {
 		super();
 		this.frequency = another.frequency;
 		this.patternTS = another.patternTS;
-		this.correctNN = another.correctNN;
-		this.wrongNN = another.wrongNN;
 		this.error = another.error;
 		this.label = another.label;
-		this.patternsInClass = another.patternsInClass;
-		this.wrongClass = another.wrongClass;
-		this.nnDistSum = another.nnDistSum;
 		this.fromTS = another.fromTS;
 	}
 
@@ -56,32 +49,8 @@ public class TSPattern implements Cloneable, Comparable<TSPattern> {
 		this.patternTS = patternTS;
 	}
 
-	public int getCorrectNN() {
-		return correctNN;
-	}
-
-	public void setCorrectNN(int correctNN) {
-		this.correctNN = correctNN;
-	}
-
-	public int getWrongNN() {
-		return wrongNN;
-	}
-
-	public void setWrongNN(int wrongNN) {
-		this.wrongNN = wrongNN;
-	}
-
 	public String getLabel() {
 		return label;
-	}
-
-	public ArrayList<double[]> getPatternsInClass() {
-		return patternsInClass;
-	}
-
-	public void setPatternsInClass(ArrayList<double[]> patternsInClass) {
-		this.patternsInClass = patternsInClass;
 	}
 
 	public double getError() {
@@ -90,22 +59,6 @@ public class TSPattern implements Cloneable, Comparable<TSPattern> {
 
 	public void setError(double error) {
 		this.error = error;
-	}
-
-	public HashMap<String, Integer> getWrongClass() {
-		return wrongClass;
-	}
-
-	public void setWrongClass(HashMap<String, Integer> wrongClass) {
-		this.wrongClass = wrongClass;
-	}
-
-	public double getNnDistSum() {
-		return nnDistSum;
-	}
-
-	public void setNnDistSum(double nnDistSum) {
-		this.nnDistSum = nnDistSum;
 	}
 
 	public int getFromTS() {
@@ -142,10 +95,6 @@ public class TSPattern implements Cloneable, Comparable<TSPattern> {
 		output.append("Label: " + this.label + "\n");
 		output.append("Length PatternsTS (" + this.patternTS.length + "):\n");
 		output.append(Arrays.toString(this.patternTS));
-		//output.append("Patterns in class (" + this.patternsInClass.size() + "):\n");
-		//for(int i = 0; i < this.patternTS.length; i++) {
-		//	output.append(this.patternTS[i] );
-		//}
 
 		return output.toString();
 	}

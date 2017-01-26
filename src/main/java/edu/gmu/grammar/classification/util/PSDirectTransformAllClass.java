@@ -155,7 +155,7 @@ public class PSDirectTransformAllClass {
 		return newRes;
 	}
 
-	private Map<String, List<double[]>> loadGrammarVizData(double[][] data, String[] labels) {
+	public Map<String, List<double[]>> convertGrammarVizData(double[][] data, String[] labels) {
 		if(data.length != labels.length) {
 			this.consoleLogger.error("The number of classes (" +
 					data.length + ") and the number of labels (" +
@@ -243,7 +243,7 @@ public class PSDirectTransformAllClass {
 
 		//this.loadTrainingData(trainingDataFilePath);
 		this.TRAINING_DATA_PATH = trainingDataFilePath;
-		this.trainData = this.loadGrammarVizData(data, labels);
+		this.trainData = this.convertGrammarVizData(data, labels);
 
 		// lower bound.
 		double lper = 0.1;
@@ -277,7 +277,7 @@ public class PSDirectTransformAllClass {
 
 		//this.loadTrainingData(trainingDataFilePath);
 		this.TRAINING_DATA_PATH = trainingDataFilePath;
-		this.trainData = this.loadGrammarVizData(data, labels);
+		this.trainData = this.convertGrammarVizData(data, labels);
 
 		return this.RPMTrainPrivate(strategy,
 				lowerWindow, upperWindow,
@@ -316,7 +316,7 @@ public class PSDirectTransformAllClass {
 		ClassificationResults results = new ClassificationResults();
 		results.testDataPath = TEST_DATA_PATH = testingDataFilePath;
 		//results.testData = testData = UCRUtils.readUCRData(TEST_DATA_PATH);
-		results.testData = this.testData = loadGrammarVizData(data, labels);
+		results.testData = this.testData = convertGrammarVizData(data, labels);
 
 		classifyWithTransformedDataAllCls(bestSelectedPatternsAllClass, results);
 

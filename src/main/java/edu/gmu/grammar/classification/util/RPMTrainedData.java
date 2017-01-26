@@ -6,13 +6,17 @@ import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import net.seninp.jmotif.sax.NumerosityReductionStrategy;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by David Fleming on 12/2/16.
  */
-public class RPMTrainedData {
+public class RPMTrainedData implements Serializable {
+
+    private static final long serialVersionUID = -5673240879243466426L;
+
     public int windowSize;
     public int paa;
     public int alphabet;
@@ -20,7 +24,7 @@ public class RPMTrainedData {
     public BestSelectedPatterns[] bestSelectedPatternsAllClass;
 
     public String training_data_path;
-    public Map<String, List<double[]>> trainData;
+    public transient Map<String, List<double[]>> trainData;
     public String allStrategy;
 
     public int[] upperBounds;

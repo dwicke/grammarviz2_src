@@ -34,8 +34,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
 
-import edu.gmu.grammar.classification.util.ClassificationResults;
-import edu.gmu.grammar.classification.util.RPMTrainedData;
 import net.seninp.grammarviz.logic.RPMHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -902,7 +900,7 @@ public class GrammarVizView implements Observer, ActionListener {
       else if (GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
         controller.getSession().rpmHandler = (RPMHandler) message.getPayload();
         ruleChartPane.setChartData(this.controller.getSession());
-        this.rpmRepPanel.setClassificationResults(this.controller.getSession());
+        this.rpmRepPanel.setResults(this.controller.getSession());
 
         Runnable updateParam = new Runnable() {
           @Override
@@ -913,6 +911,9 @@ public class GrammarVizView implements Observer, ActionListener {
             SAXwindowSizeField.setText(String.valueOf(rpmHandler.getWindowSize()));
             SAXpaaSizeField.setText(String.valueOf(rpmHandler.getPaa()));
             SAXalphabetSizeField.setText(String.valueOf(rpmHandler.getAlphabet()));
+            rpmIterationeField.setText(String.valueOf(rpmHandler.getNumberOfIterations()));
+            rpmPanel.revalidate();
+            rpmPanel.repaint();
             saxParametersPane.revalidate();
             saxParametersPane.repaint();
             rpmRepPanel.updateRPMStatistics();
@@ -923,16 +924,18 @@ public class GrammarVizView implements Observer, ActionListener {
       }
       // Return Results from RPM Classification and load them into the GUI
       else if (GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
-        this.rpmPanel.setClassificationResults(this.controller.getSession());
+        controller.getSession().rpmHandler = (RPMHandler) message.getPayload();
 
-        Runnable updateClassification = new Runnable() {
+
+        Runnable updateTable = new Runnable() {
           @Override
           public void run() {
+            rpmPanel.setClassificationResults(controller.getSession());
             rpmPanel.updateRPMStatistics();
             rpmPanel.resetPanel();
           }
         };
-        SwingUtilities.invokeLater(updateClassification);
+        SwingUtilities.invokeLater(updateTable);
       }
     }
   }

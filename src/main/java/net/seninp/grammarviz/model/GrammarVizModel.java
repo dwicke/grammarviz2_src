@@ -464,9 +464,17 @@ public class GrammarVizModel extends Observable implements Observer {
 
   public synchronized void RPMLoadModel() {
     this.log("Loading Model from " + this.dataFileName + "...");
+    if(this.rpmHandler == null) {
+      this.rpmHandler = new RPMHandler();
+      this.rpmHandler.addObserver(this);
+    }
     try {
-      this.loadData("0");
       this.rpmHandler.RPMLoadModel(this.dataFileName);
+      this.dataFileName = this.rpmHandler.getTrainingFilename();
+      this.loadData("0");
+      this.rpmHandler.setTrainingData(this.ts);
+      this.rpmHandler.setTrainingLabels(this.RPMLabels);
+      this.rpmHandler.forceRPMModelReload();
       setChanged();
       notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
     } catch (Exception e) {
