@@ -12,10 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Observable;
-import java.util.HashMap;
+import java.util.*;
 
 import edu.gmu.grammar.classification.util.ClassificationResults;
 import edu.gmu.grammar.classification.util.PSDirectTransformAllClass;
@@ -45,7 +42,7 @@ import net.seninp.util.StackTrace;
  * @author psenin
  * 
  */
-public class GrammarVizModel extends Observable {
+public class GrammarVizModel extends Observable implements Observer {
 
   final static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
   private static final String SPACE = " ";
@@ -426,16 +423,54 @@ public class GrammarVizModel extends Observable {
   public synchronized void RPMTrain(int numberOfIterations) {
     if(this.rpmHandler == null) {
       this.rpmHandler = new RPMHandler();
+      this.rpmHandler.addObserver(this);
     }
     this.log("Training...");
     try {
       this.rpmHandler.setNumberOfIterations(numberOfIterations);
-      this.rpmHandler.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
-      setChanged();
-      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
+      this.rpmHandler.setTrainingFilename(this.getDataFileName());
+      this.rpmHandler.setTrainingData(this.ts);
+      this.rpmHandler.setTrainingLabels(this.RPMLabels);
+
+      (new Thread(this.rpmHandler)).start();
+
+      //this.rpmHandler.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
+      //setChanged();
+      //notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
       //this.log("RPM Training Results: " + results.toString());
     } catch (Exception e) {
       this.log("error while training RPM model " + StackTrace.toString(e));
+      e.printStackTrace();
+    }
+  }
+
+  @Override
+  public void update(Observable o, Object arg) {
+    if (arg instanceof GrammarVizMessage) {
+      this.setChanged();
+      notifyObservers(arg);
+    }
+  }
+
+  public synchronized void RPMSaveModel(String filename) {
+    this.log("Testing Model using " + filename + "...");
+    try {
+        this.rpmHandler.RPMSaveModel(filename);
+    } catch (Exception e) {
+      this.log("error while saving RPM model " + StackTrace.toString(e));
+      e.printStackTrace();
+    }
+  }
+
+  public synchronized void RPMLoadModel() {
+    this.log("Loading Model from " + this.dataFileName + "...");
+    try {
+      this.loadData("0");
+      this.rpmHandler.RPMLoadModel(this.dataFileName);
+      setChanged();
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
+    } catch (Exception e) {
+      this.log("error while loading RPM model " + StackTrace.toString(e));
       e.printStackTrace();
     }
   }

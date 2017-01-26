@@ -4,17 +4,24 @@ import edu.gmu.grammar.classification.util.ClassificationResults;
 import edu.gmu.grammar.classification.util.PSDirectTransformAllClass;
 import edu.gmu.grammar.classification.util.RPMTrainedData;
 import edu.gmu.grammar.patterns.TSPattern;
+import net.seninp.grammarviz.model.GrammarVizMessage;
+import net.seninp.util.StackTrace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Observable;
 
 /**
  * Created by David Fleming on 1/24/17.
  */
-public class RPMHandler {
+public class RPMHandler extends Observable implements Runnable {
 
     private PSDirectTransformAllClass RPM;
     private RPMTrainedData trainingResults;
+    private String trainingFilename;
+    private double[][] trainingData;
     private String[] trainingLabels;
     private ClassificationResults testingResults;
     private String[] testingLabels;
@@ -22,27 +29,50 @@ public class RPMHandler {
     private int numberOfIterations;
 
     public RPMHandler() {
+        super();
         this.RPM = new PSDirectTransformAllClass();
         this.numberOfIterations = PSDirectTransformAllClass.DEFAULT_NUMBER_OF_ITERATIONS;
     }
 
-    public void RPMTrain(String filename, double[][] data, String[] labels) throws java.io.IOException {
-        this.trainingLabels = labels;
+    public synchronized void RPMTrain(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.trainingResults = this.RPM.RPMTrain(filename, data, labels, PSDirectTransformAllClass.DEFAULT_STRATEGY,
                 this.numberOfIterations);
         this.finalPatterns = this.trainingResults.finalPatterns();
     }
 
-    public void RPMTestData(String filename, double[][] data, String[] labels) throws java.io.IOException {
+    @Override
+    public void run() {
+        this.log("Starting RPM Training in Background");
+        try {
+            this.RPMTrain(this.trainingFilename, this.trainingData, this.trainingLabels);
+            this.setChanged();
+            notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this));
+
+            this.log("Finished RPM Training in Background");
+        } catch(Exception e) {
+            this.log("error while training RPM model " + StackTrace.toString(e));
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void RPMTestData(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.testingLabels = labels;
         this.testingResults = this.RPM.RPMTestData(filename, data, labels);
     }
 
-    public TSPattern[] getRepresentativePatterns() {
+    public synchronized void RPMLoadModel(String filename) {
+
+    }
+
+    public synchronized void RPMSaveModel(String filename) {
+
+    }
+
+    public synchronized TSPattern[] getRepresentativePatterns() {
         return this.finalPatterns;
     }
 
-    public String[][] getResults() {
+    public synchronized String[][] getResults() {
         if(this.testingResults == null)
             return null;
 
@@ -76,32 +106,57 @@ public class RPMHandler {
         return output;
     }
 
-    public int getWindowSize() {
+    public synchronized int getWindowSize() {
         return this.trainingResults.windowSize;
     }
 
-    public int getPaa() {
+    public synchronized int getPaa() {
         return this.trainingResults.paa;
     }
 
-    public int getAlphabet() {
+    public synchronized int getAlphabet() {
         return this.trainingResults.alphabet;
     }
 
-    public String[] getTrainedLabels() {
+    public synchronized String[] getTrainedLabels() {
         return this.trainingLabels;
     }
 
-    public String[] getTestingLabels() {
+    public synchronized String[] getTestingLabels() {
         return this.testingLabels;
     }
 
-    public void setNumberOfIterations(int numberOfIterations) { this.numberOfIterations = numberOfIterations; }
+    public synchronized void setNumberOfIterations(int numberOfIterations) { this.numberOfIterations = numberOfIterations; }
 
-    public int getNumberOfIterations() {return this.numberOfIterations; }
+    public synchronized int getNumberOfIterations() {return this.numberOfIterations; }
+
+
+    public synchronized String getTrainingFilename() {
+        return trainingFilename;
+    }
+
+    public synchronized void setTrainingFilename(String trainingFilename) {
+        this.trainingFilename = trainingFilename;
+    }
+
+    public synchronized double[][] getTrainingData() {
+        return trainingData;
+    }
+
+    public synchronized void setTrainingData(double[][] trainingData) {
+        this.trainingData = trainingData;
+    }
+
+    public synchronized String[] getTrainingLabels() {
+        return trainingLabels;
+    }
+
+    public synchronized void setTrainingLabels(String[] trainingLabels) {
+        this.trainingLabels = trainingLabels;
+    }
 
     @Override
-    public String toString() {
+    public synchronized String toString() {
         StringBuilder output = new StringBuilder();
         String[][] results = this.getResults();
         for(int i = 0; i < results.length; i++) {
@@ -110,5 +165,10 @@ public class RPMHandler {
         }
 
         return output.toString();
+    }
+
+    private void log(String message) {
+        this.setChanged();
+        notifyObservers(new GrammarVizMessage(GrammarVizMessage.STATUS_MESSAGE, "RPM Handler: " + message));
     }
 }

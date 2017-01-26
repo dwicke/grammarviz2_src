@@ -908,6 +908,8 @@ public class GrammarVizView implements Observer, ActionListener {
           @Override
           public void run() {
             RPMHandler rpmHandler = controller.getSession().rpmHandler;
+            testButton.setEnabled(true);
+            saveModelButton.setEnabled(true);
             SAXwindowSizeField.setText(String.valueOf(rpmHandler.getWindowSize()));
             SAXpaaSizeField.setText(String.valueOf(rpmHandler.getPaa()));
             SAXalphabetSizeField.setText(String.valueOf(rpmHandler.getAlphabet()));
@@ -971,7 +973,7 @@ public class GrammarVizView implements Observer, ActionListener {
 
     if (LOAD_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "load model action performed");
-      JOptionPane.showMessageDialog(null, "Implement me");
+      this.controller.getRPMLoadListener().actionPerformed(new ActionEvent(this, 0, null));
     }
 
     if (TRAIN_MODEL.equalsIgnoreCase(command)) {
@@ -979,8 +981,6 @@ public class GrammarVizView implements Observer, ActionListener {
       //JOptionPane.showMessageDialog(null, "Implement me");
       this.controller.getSession().rpmNumberOfIterations = Integer.valueOf(this.rpmIterationeField.getText());
       this.controller.getRPMTrainListener().actionPerformed(new ActionEvent(this, 0, null));
-      this.testButton.setEnabled(true);
-      this.saveModelButton.setEnabled(true);
     }
 
     if (TEST_MODEL.equalsIgnoreCase(command)) {
@@ -991,7 +991,7 @@ public class GrammarVizView implements Observer, ActionListener {
 
     if (SAVE_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "save model action performed");
-      JOptionPane.showMessageDialog(null, "Implement me");
+      this.controller.getRPMSaveListener().actionPerformed(new ActionEvent(this, 0, null));
     }
 
     if (LOAD_DATA.equalsIgnoreCase(command)) {

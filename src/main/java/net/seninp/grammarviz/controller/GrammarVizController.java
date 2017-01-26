@@ -148,7 +148,7 @@ public class GrammarVizController extends Observable implements ActionListener {
     ActionListener rpmLoadListener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
-
+        model.RPMLoadModel();
       }
     };
 
@@ -159,7 +159,15 @@ public class GrammarVizController extends Observable implements ActionListener {
     ActionListener rpmSaveListener = new ActionListener() {
       @Override
       public void actionPerformed(ActionEvent e) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Model Save Location");
 
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+          File file = fileChooser.getSelectedFile();
+
+          // Run RPM Testing on the selected file
+          model.RPMSaveModel(file.getAbsolutePath());
+        }
       }
     };
 
