@@ -162,6 +162,7 @@ public class PSDirectTransformAllClass {
 					labels.length + ") did not match");
 			return null;
 		}
+
 		Map<String, List<double[]>> res = new HashMap<String, List<double[]>>();
 
 		for(int i = 0; i < labels.length; i++) {
@@ -181,7 +182,7 @@ public class PSDirectTransformAllClass {
 			res.get(seriesType).add(series);
 		}
 
-		res = refineClassLabel(res);
+		//res = refineClassLabel(res);
 
 		return res;
 	}
