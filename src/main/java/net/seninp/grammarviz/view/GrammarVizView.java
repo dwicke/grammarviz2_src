@@ -981,12 +981,14 @@ public class GrammarVizView implements Observer, ActionListener {
       //JOptionPane.showMessageDialog(null, "Implement me");
       this.controller.getSession().rpmNumberOfIterations = Integer.valueOf(this.rpmIterationeField.getText());
       this.controller.getRPMTrainListener().actionPerformed(new ActionEvent(this, 0, null));
+      this.rpmRepPanel.clear();
     }
 
     if (TEST_MODEL.equalsIgnoreCase(command)) {
       log(Level.INFO, "test model action performed");
       //JOptionPane.showMessageDialog(null, "Implement me");
       this.controller.getRPMTestListener().actionPerformed(new ActionEvent(this, 0, null));
+      this.rpmPanel.clear();
     }
 
     if (SAVE_MODEL.equalsIgnoreCase(command)) {
