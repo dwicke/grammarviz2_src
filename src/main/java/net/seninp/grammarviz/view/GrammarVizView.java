@@ -904,25 +904,35 @@ public class GrammarVizView implements Observer, ActionListener {
         ruleChartPane.setChartData(this.controller.getSession());
         this.rpmRepPanel.setClassificationResults(this.controller.getSession());
 
-        RPMHandler rpmHandler = controller.getSession().rpmHandler;
-        testButton.setEnabled(true);
-        saveModelButton.setEnabled(true);
-        SAXwindowSizeField.setText(String.valueOf(rpmHandler.getWindowSize()));
-        SAXpaaSizeField.setText(String.valueOf(rpmHandler.getPaa()));
-        SAXalphabetSizeField.setText(String.valueOf(rpmHandler.getAlphabet()));
-        saxParametersPane.revalidate();
-        saxParametersPane.repaint();
-        rpmRepPanel.updateRPMStatistics();
-        rpmRepPanel.resetPanel();
-
+        Runnable updateParam = new Runnable() {
+          @Override
+          public void run() {
+            RPMHandler rpmHandler = controller.getSession().rpmHandler;
+            testButton.setEnabled(true);
+            saveModelButton.setEnabled(true);
+            SAXwindowSizeField.setText(String.valueOf(rpmHandler.getWindowSize()));
+            SAXpaaSizeField.setText(String.valueOf(rpmHandler.getPaa()));
+            SAXalphabetSizeField.setText(String.valueOf(rpmHandler.getAlphabet()));
+            saxParametersPane.revalidate();
+            saxParametersPane.repaint();
+            rpmRepPanel.updateRPMStatistics();
+            rpmRepPanel.resetPanel();
+          }
+        };
+        SwingUtilities.invokeLater(updateParam);
       }
       // Return Results from RPM Classification and load them into the GUI
       else if (GrammarVizMessage.RPM_CLASS_RESULTS_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
         this.rpmPanel.setClassificationResults(this.controller.getSession());
 
-        rpmPanel.updateRPMStatistics();
-        rpmPanel.resetPanel();
-        
+        Runnable updateClassification = new Runnable() {
+          @Override
+          public void run() {
+            rpmPanel.updateRPMStatistics();
+            rpmPanel.resetPanel();
+          }
+        };
+        SwingUtilities.invokeLater(updateClassification);
       }
     }
   }

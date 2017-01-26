@@ -30,7 +30,8 @@ public class RPMRepTableModel extends GrammarvizRulesTableDataModel {
                 int nColumn = 0;
                 item[nColumn++] = rowIndex;
                 item[nColumn++] = finalPatterns[rowIndex].getLabel(); // Get Class Label
-                item[nColumn++] = Arrays.toString(finalPatterns[rowIndex].getPatternTS()); // Get Class failure to success rate
+                item[nColumn++] = Arrays.toString(finalPatterns[rowIndex].getPatternTS()).
+                        substring(0, 1500) + "..."; // Get Class failure to success rate
                 rows.add(item);
             }
         }
