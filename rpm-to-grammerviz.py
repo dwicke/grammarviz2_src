@@ -3,9 +3,9 @@
 import argparse
 import os
 
-parser = argparse.ArgumentParser(description='Converts RPM style data to GrammerViz style data.')
-parser.add_argument('rpm', metavar='RPM_Data', help='The text file containging RPM sytle data')
-parser.add_argument('gv', metavar='GrammerViz_Data', help='The text file for output of GrammerViz sytle data')
+parser = argparse.ArgumentParser(description='Converts RPM style data to GrammarViz style data.')
+parser.add_argument('rpm', metavar='RPM_Data', help='The text file containing RPM sytle data')
+parser.add_argument('gv', metavar='GrammarViz_Data', help='The text file for output of GrammarViz sytle data')
 
 args = parser.parse_args()
 

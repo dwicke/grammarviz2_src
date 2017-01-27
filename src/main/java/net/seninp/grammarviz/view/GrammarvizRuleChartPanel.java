@@ -78,6 +78,12 @@ public class GrammarvizRuleChartPanel extends JPanel implements PropertyChangeLi
     //
     XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
     xyRenderer.setSeriesPaint(0, new Color(0, 0, 0));
+
+    // Remove loop after Feb 6, setting to black for presentation
+    for (int i = 0; i < counter; i++) {
+      xyRenderer.setSeriesPaint(i, Color.BLACK);
+    }
+
     xyRenderer.setBaseStroke(new BasicStroke(3));
 
     // X - the time axis

@@ -647,7 +647,6 @@ public class GrammarvizChartPanel extends JPanel
     // set the renderer
     //
     XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
-    // Steve Collins: changed to black but I'll leave this code in here temporarily
     //xyRenderer.setSeriesPaint(0, new Color(0, 0, 0));
     //xyRenderer.setSeriesPaint(1, Color.RED);
     //xyRenderer.setSeriesPaint(2, Color.GREEN);
@@ -656,6 +655,7 @@ public class GrammarvizChartPanel extends JPanel
     //xyRenderer.setSeriesPaint(5, Color.MAGENTA);
     //xyRenderer.setSeriesPaint(6, Color.YELLOW);
 
+    // Remove loop after Feb 6, setting to black for presentation
     for (int i = 0; i < tsData.length; i++) {
       xyRenderer.setSeriesPaint(i, Color.BLACK);
     }
