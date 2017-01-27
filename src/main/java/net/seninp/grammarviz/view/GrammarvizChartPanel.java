@@ -550,7 +550,7 @@ public class GrammarvizChartPanel extends JPanel
 
     plot.addDomainMarker(marker, Layer.BACKGROUND);
 
-    ValueMarker markStart = new ValueMarker(startVal, new Color(31, 254, 225),
+    ValueMarker markStart = new ValueMarker(startVal, new Color(255, 255, 255),
         new BasicStroke(2.0f));
     ValueMarker markEnd = new ValueMarker(endVal, new Color(31, 254, 225), new BasicStroke(2.0f));
     plot.addDomainMarker(markStart, Layer.BACKGROUND);
@@ -647,13 +647,18 @@ public class GrammarvizChartPanel extends JPanel
     // set the renderer
     //
     XYLineAndShapeRenderer xyRenderer = new XYLineAndShapeRenderer(true, false);
-    xyRenderer.setSeriesPaint(0, new Color(0, 0, 0));
-    xyRenderer.setSeriesPaint(1, Color.RED);
-    xyRenderer.setSeriesPaint(2, Color.GREEN);
-    xyRenderer.setSeriesPaint(3, Color.BLUE);
-    xyRenderer.setSeriesPaint(4, Color.CYAN);
-    xyRenderer.setSeriesPaint(5, Color.MAGENTA);
-    xyRenderer.setSeriesPaint(6, Color.YELLOW);
+    // Steve Collins: changed to black but I'll leave this code in here temporarily
+    //xyRenderer.setSeriesPaint(0, new Color(0, 0, 0));
+    //xyRenderer.setSeriesPaint(1, Color.RED);
+    //xyRenderer.setSeriesPaint(2, Color.GREEN);
+    //xyRenderer.setSeriesPaint(3, Color.BLUE);
+    //xyRenderer.setSeriesPaint(4, Color.CYAN);
+    //xyRenderer.setSeriesPaint(5, Color.MAGENTA);
+    //xyRenderer.setSeriesPaint(6, Color.YELLOW);
+
+    for (int i = 0; i < tsData.length; i++) {
+      xyRenderer.setSeriesPaint(i, Color.BLACK);
+    }
     xyRenderer.setBaseStroke(new BasicStroke(3));
 
     // X - the time axis
