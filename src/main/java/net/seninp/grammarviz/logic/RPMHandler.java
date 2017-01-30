@@ -62,28 +62,28 @@ public class RPMHandler extends Observable implements Runnable {
         this.testingResults = this.RPM.RPMTestData(filename, data, labels);
     }
 
-    public synchronized void RPMLoadModel(String filename) {
+    public synchronized void RPMLoadModel(String filename) throws Exception {
         RPMTrainedData rpmTrainedData = null;
-        try {
+        //try {
             FileInputStream loadFile = new FileInputStream(filename);
             ObjectInputStream loadStream = new ObjectInputStream(loadFile);
             rpmTrainedData = (RPMTrainedData) loadStream.readObject();
             loadStream.close();
             loadFile.close();
-        } catch(ClassNotFoundException e) {
+        /*} catch(ClassNotFoundException e) {
             this.log("error " + filename + " is not a RPM Model");
             e.printStackTrace();
         } catch(Exception e) {
             this.log("error while loading RPM model " + StackTrace.toString(e));
             e.printStackTrace();
-        }
+        }*/
 
-        if(!(rpmTrainedData == null)) {
+        //if(!(rpmTrainedData == null)) {
             this.trainingResults = rpmTrainedData;
             this.trainingFilename = rpmTrainedData.training_data_path;
             this.finalPatterns = rpmTrainedData.finalPatterns();
             this.numberOfIterations = rpmTrainedData.iterations_num;
-        }
+        //}
 
     }
 

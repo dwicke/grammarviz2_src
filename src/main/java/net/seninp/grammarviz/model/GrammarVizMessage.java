@@ -32,6 +32,15 @@ public class GrammarVizMessage {
   /** The RPM Classification Results update message Key */
   public static final String RPM_CLASS_RESULTS_UPDATE_MESSAGE = "rpm_class_results_update_message";
 
+  /** The RPM Model Loading Error update message key */
+  //public static final String RPM_MODEL_LOAD_ERROR_UPDATE_MESSAGE = "rpm_model_load_error_update_message";
+
+  /** The RPM Missing Trainging Data for mdoel load error update message key */
+  public static final String RPM_MISSING_TRAIN_DATA_UPDATE_MESSAGE = "rpm_missing_train_data_update_message";
+
+  /** The Error Loading File update message key */
+  public static final String LOAD_FILE_ERROR_UPDATE_MESSAGE = "load_file_error_update_message";
+
   /** The key storage. */
   private String type;
 

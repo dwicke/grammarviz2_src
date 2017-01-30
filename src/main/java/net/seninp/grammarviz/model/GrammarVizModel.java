@@ -1,11 +1,6 @@
 package net.seninp.grammarviz.model;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -175,12 +170,16 @@ public class GrammarVizModel extends Observable implements Observer {
     }
     catch (Exception e) {
       String stackTrace = StackTrace.toString(e);
-      System.err.println(StackTrace.toString(e));
+      //System.err.println(StackTrace.toString(e));
       this.log("error while trying to read data from " + fileName + ":\n" + stackTrace);
+      setChanged();
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.LOAD_FILE_ERROR_UPDATE_MESSAGE,
+              "Data File could not be read: " + this.dataFileName));
+      return null;
     }
-    finally {
-      assert true;
-    }
+    //finally {
+    //  assert true;
+    //}
 
     double[][] output = null;
     // convert to simple doubles array and clean the variable
@@ -206,21 +205,21 @@ public class GrammarVizModel extends Observable implements Observer {
   public synchronized void loadData(String limitStr) {
 
     this.ts = loadDataPrivate(limitStr, this.dataFileName);
+    if(!(this.ts == null)) {
+      LOGGER.debug("loaded " + this.ts[0].length + " points....");
 
-    LOGGER.debug("loaded " + this.ts[0].length + " points....");
+      // notify that the process finished
+      this.log("loaded " + this.ts[0].length + " points from " + this.dataFileName);
 
-    // notify that the process finished
-    this.log("loaded " + this.ts[0].length + " points from " + this.dataFileName);
-
-    // and send the timeseries
-    setChanged();
-    notifyObservers(new GrammarVizMessage(GrammarVizMessage.TIME_SERIES_MESSAGE, this.ts));
-    // and if RPM data was found, enable RPM mode
-    if(this.enableRPM) {
+      // and send the timeseries
       setChanged();
-      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_DATA_MESSAGE, this.RPMLabels));
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.TIME_SERIES_MESSAGE, this.ts));
+      // and if RPM data was found, enable RPM mode
+      if(this.enableRPM) {
+        setChanged();
+        notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_DATA_MESSAGE, this.RPMLabels));
+      }
     }
-
   }
 
   /**
@@ -433,11 +432,6 @@ public class GrammarVizModel extends Observable implements Observer {
       this.rpmHandler.setTrainingLabels(this.RPMLabels);
 
       (new Thread(this.rpmHandler)).start();
-
-      //this.rpmHandler.RPMTrain(this.getDataFileName(), this.ts, this.RPMLabels);
-      //setChanged();
-      //notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
-      //this.log("RPM Training Results: " + results.toString());
     } catch (Exception e) {
       this.log("error while training RPM model " + StackTrace.toString(e));
       e.printStackTrace();
@@ -462,24 +456,62 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  private boolean loadTrainingDataForModel(String filename) {
+    String tempDataFileName = this.dataFileName;
+    this.dataFileName = filename;
+    this.loadData("0");
+    if(!(this.ts == null)) {
+      this.rpmHandler.setTrainingData(this.ts);
+      this.rpmHandler.setTrainingLabels(this.RPMLabels);
+      this.rpmHandler.forceRPMModelReload();
+      this.dataFileName = tempDataFileName;
+      return true;
+    } else {
+      this.dataFileName = tempDataFileName;
+      return false;
+    }
+  }
+
   public synchronized void RPMLoadModel() {
     this.log("Loading Model from " + this.dataFileName + "...");
-    if(this.rpmHandler == null) {
+    if (this.rpmHandler == null) {
       this.rpmHandler = new RPMHandler();
       this.rpmHandler.addObserver(this);
     }
     try {
       this.rpmHandler.RPMLoadModel(this.dataFileName);
-      this.dataFileName = this.rpmHandler.getTrainingFilename();
-      this.loadData("0");
-      this.rpmHandler.setTrainingData(this.ts);
-      this.rpmHandler.setTrainingLabels(this.RPMLabels);
-      this.rpmHandler.forceRPMModelReload();
+      String filename = this.rpmHandler.getTrainingFilename();
+      if((new File(filename)).exists()) {
+        if(this.loadTrainingDataForModel(filename)) {
+          setChanged();
+          notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
+        } else {
+          this.rpmHandler = null;
+        }
+      } else {
+        setChanged();
+        notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_MISSING_TRAIN_DATA_UPDATE_MESSAGE, filename));
+      }
+    } catch (StreamCorruptedException e) {
       setChanged();
-      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.LOAD_FILE_ERROR_UPDATE_MESSAGE,
+              "File was not a RPM Model: " + this.dataFileName));
+    } catch (ClassNotFoundException e) {
+      setChanged();
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.LOAD_FILE_ERROR_UPDATE_MESSAGE,
+              "Could not load a RPM Model from file: " + this.dataFileName));
     } catch (Exception e) {
       this.log("error while loading RPM model " + StackTrace.toString(e));
       e.printStackTrace();
+    }
+  }
+
+  public synchronized void RPMLoadMissingTrain(String filename) {
+    if(this.loadTrainingDataForModel(filename)) {
+      setChanged();
+      notifyObservers(new GrammarVizMessage(GrammarVizMessage.RPM_TRAIN_RESULTS_UPDATE_MESSAGE, this.rpmHandler));
+    } else {
+      this.rpmHandler = null;
     }
   }
 

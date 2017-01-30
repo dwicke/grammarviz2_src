@@ -155,6 +155,23 @@ public class GrammarVizController extends Observable implements ActionListener {
     return rpmLoadListener;
   }
 
+  public ActionListener getRPMLoadMissingTrainListener() {
+    ActionListener rpmLoadMissingTrainListener = new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Missing Training Data, Select Training Data File");
+
+        if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+          File file = fileChooser.getSelectedFile();
+          model.RPMLoadMissingTrain(file.getAbsolutePath());
+        }
+      }
+    };
+
+    return rpmLoadMissingTrainListener;
+  }
+
   public ActionListener getRPMSaveListener() {
     ActionListener rpmSaveListener = new ActionListener() {
       @Override

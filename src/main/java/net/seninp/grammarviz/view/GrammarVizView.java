@@ -937,6 +937,14 @@ public class GrammarVizView implements Observer, ActionListener {
         };
         SwingUtilities.invokeLater(updateTable);
       }
+      // Show Error when file was not a model
+      else if (GrammarVizMessage.LOAD_FILE_ERROR_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
+        JOptionPane.showMessageDialog(frame, message.getPayload(), "Error Loading File", JOptionPane.ERROR_MESSAGE);
+      }
+      // Show Dialog box if training data could not be loaded when loading model
+      else if (GrammarVizMessage.RPM_MISSING_TRAIN_DATA_UPDATE_MESSAGE.equalsIgnoreCase(message.getType())) {
+        this.controller.getRPMLoadMissingTrainListener().actionPerformed(new ActionEvent(this, 0, null));
+      }
     }
   }
 
