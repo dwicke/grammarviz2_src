@@ -17,7 +17,7 @@ public class DistMethods {
 	 * @return
 	 */
 	public static double calcDistTSAndPattern(double[] ts, double[] p) {
-		double[] slidingWindow = new double[p.length];;
+		double[] slidingWindow = new double[p.length];
 		int patternLen = p.length;
 		int lastStartPoint = ts.length - p.length + 1;
 		if (lastStartPoint < 1) { return Double.POSITIVE_INFINITY; }
@@ -62,7 +62,7 @@ public class DistMethods {
 		double bestDist = Math.pow(best * n, 2);
 		double[][] dtw = new double[n+1][n+1];
 
-		if (lowerBoundDist(ts, p, w) < bestDist) { return best; }
+		if (dtwLowerBoundDist(ts, p, w) < bestDist) { return best; }
 
 		for (int i = 0; i <= n; i++) {
 			for (int j = 0; j <= n; j++) {
@@ -93,7 +93,7 @@ public class DistMethods {
 		return Math.sqrt(dtw[n][n]) / n;
 	}
 
-	private static double lowerBoundDist(double[] ts, double[] p, int w) {
+	private static double dtwLowerBoundDist(double[] ts, double[] p, int w) {
 		double dist = 0;
 		for (int i = 0; i < p.length; i++) {
 			double qLower = (i - w > 0) ? p[i-w] : p[0];
