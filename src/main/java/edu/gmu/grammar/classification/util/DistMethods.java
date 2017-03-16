@@ -3,9 +3,7 @@ package edu.gmu.grammar.classification.util;
 import java.util.Random;
 
 public class DistMethods {
-
-	private static final double INF = 10000000000000000000f;
-	private static final double WARP_WINDOW = 0.10;
+	private static final double WARP_WINDOW = 1.00;
 
 	/**
 	 * Calculating the distance between time series and pattern.
@@ -16,54 +14,61 @@ public class DistMethods {
 	 *            , a series of points for pattern.
 	 * @return
 	 */
-	public static double calcEuclideanDist(double[] ts, double[] p) {
-		double[] slidingWindow = new double[p.length];
-		int patternLen = p.length;
-		int lastStartPoint = ts.length - p.length + 1;
-		if (lastStartPoint < 1) { return Double.POSITIVE_INFINITY; }
-		int startPoint = new Random().nextInt(lastStartPoint);
+	public static double calcDistEuclidean(double[] ts, double[] p) {
+		if (ts.length - p.length < 0) { return Double.POSITIVE_INFINITY; }
 
-		System.arraycopy(ts, startPoint, slidingWindow, 0, p.length);
-		double best = euclideanDistNorm(slidingWindow, p);
-		//double best = dtwDistNorm(slidingWindow, p);
+		int lastStart = ts.length - p.length;
+		int randStart = new Random().nextInt(lastStart + 1);
+		double best = euclideanDistNorm(ts, p, randStart);
 
-		for (int i = 0; i < lastStartPoint; i++) {
-			System.arraycopy(ts, i, slidingWindow, 0, p.length);
-			best = euclideanDistNorm(slidingWindow, p, best);
-			//best = dtwDistNorm(slidingWindow, p, best);
+		for (int i = 0; i < lastStart; i++) {
+			best = euclideanDistNorm(ts, p, i, best);
 		}
 
 		return best;
 	}
 
-	private static double euclideanDistNorm(double[] ts, double[] p) {
-		return euclideanDistNorm(ts, p, Double.POSITIVE_INFINITY);
+	private static double euclideanDistNorm(double[] ts, double[] p, int w) {
+		return euclideanDistNorm(ts, p, w, Double.POSITIVE_INFINITY);
 	}
 
-	private static double euclideanDistNorm(double[] ts, double[] p, double best) {
+	private static double euclideanDistNorm(double[] ts, double[] p, int start, double best) {
 		double bestDist = Math.pow(best * p.length, 2);
 		double dist = 0;
 
 		for (int i = 0; i < p.length; i++) {
-			dist += Math.pow(ts[i] - p[i], 2);
+			dist += Math.pow(ts[start + i] - p[i], 2);
 			if (dist > bestDist) { return best; }
 		}
 
 		return Math.sqrt(dist) / p.length;
 	}
 
-	private static double dtwDistNorm(double[] ts, double[] p) {
-		return dtwDistNorm(p, ts, Double.POSITIVE_INFINITY);
+	public static double calcDistDTW(double[] ts, double[] p) {
+		if (ts.length - p.length < 0) { return Double.POSITIVE_INFINITY; }
+
+		int lastStart = ts.length - p.length;
+		int randStart = new Random().nextInt(lastStart + 1);
+		double best = dtwDistNorm(ts, p, randStart);
+
+		for (int i = 0; i < lastStart; i++) {
+			best = dtwDistNorm(ts, p, i, best);
+		}
+
+		return best;
+	}
+	private static double dtwDistNorm(double[] ts, double[] p, int start) {
+		return dtwDistNorm(ts, p, start, Double.POSITIVE_INFINITY);
 	}
 
-	private static double dtwDistNorm(double[] ts, double[] p, double best) {
-		int n = p.length;
-		int w = (int) (WARP_WINDOW * n);
+	// TODO: Update to be memory efficient on column/row use
+	private static double dtwDistNorm(double[] ts, double[] p, int start, double best) {
+        int n = p.length;
+		int w = (int) Math.round(WARP_WINDOW * n);
 		double bestDist = Math.pow(best * n, 2);
-		double[][] dtw = new double[n+1][n+1];
+		//if (dtwLowerBoundDist(ts, p, start, w) >= bestDist) { return best; }
 
-		if (dtwLowerBoundDist(ts, p, w) < bestDist) { return best; }
-
+		double[][] dtw = new double[n + 1][n + 1];
 		for (int i = 0; i <= n; i++) {
 			for (int j = 0; j <= n; j++) {
 				dtw[i][j] = Double.POSITIVE_INFINITY;
@@ -72,17 +77,17 @@ public class DistMethods {
 		dtw[0][0] = 0;
 
 		for (int i = 1; i <= n; i++) {
-			int jMin = (i - w > 1) ? i - w : 1;
+		    int jMin = (i - w > 1) ? i - w : 1;
 			int jMax = (i + w < n) ? i + w : n;
 
 			for (int j = jMin; j <= jMax; j++) {
-				double dist  = Math.pow(p[i-1] - ts[j-1], 2);
-				double min = dtw[i-1][j-1];
+				double dist = Math.pow(p[i - 1] - ts[start + j - 1], 2);
+				double min = dtw[i - 1][j - 1];
 
-				if (min > dtw[i-1][j]) {
-					min = dtw[i-1][j];
-				} else if (min > dtw[i][j-1]) {
-					min = dtw[i][j-1];
+				if (min > dtw[i - 1][j]) {
+					min = dtw[i - 1][j];
+				} else if (min > dtw[i][j - 1]) {
+					min = dtw[i][j - 1];
 				}
 
 				dtw[i][j] = dist + min;
@@ -93,21 +98,43 @@ public class DistMethods {
 		return Math.sqrt(dtw[n][n]) / n;
 	}
 
-	private static double dtwLowerBoundDist(double[] ts, double[] p, int w) {
+	private static double dtwLowerBoundDist(double[] ts, double[] p, int start, int r) {
 		double dist = 0;
 		for (int i = 0; i < p.length; i++) {
-			double qLower = (i - w > 0) ? p[i-w] : p[0];
-			double qUpper = (i + w < p.length) ? p[i+w] : p[p.length-1];
-			double u = (qUpper > qLower) ? qUpper : qLower;
-			double l = (qUpper < qLower) ? qUpper : qLower;
+			double u = upperBound(p, i, r);
+			double l = lowerBound(p, i, r);
 
-			if (ts[i] > u) {
-				dist += Math.pow(ts[i] - u, 2);
-			} else if (ts[i] < l) {
-				dist += Math.pow(ts[i] - l, 2);
+			if (ts[start + i] > u) {
+				dist += Math.pow(ts[start + i] - u, 2);
+			} else if (ts[start + i] < l) {
+				dist += Math.pow(ts[start + i] - l, 2);
 			}
 		}
 
-		return Math.sqrt(dist) / p.length;
+		return dist;
+	}
+
+	private static double upperBound(double q[], int idx, int r) {
+		int max = (idx + r < q.length) ? idx + r : q.length - 1;
+		int min = (idx - r > 0)        ? idx - r : 0;
+
+		double upper = q[min];
+		for (int i = min + 1; i <= max; i++) {
+			if (upper < q[i]) { upper = q[i]; }
+		}
+
+		return upper;
+	}
+
+	private static double lowerBound(double q[], int idx, int r) {
+		int max = (idx + r < q.length) ? idx + r : q.length - 1;
+		int min = (idx - r > 0)        ? idx - r : 0;
+
+		double lower = q[min];
+		for (int i = min + 1; i <= max; i++) {
+			if (lower > q[i]) { lower = q[i]; }
+		}
+
+		return lower;
 	}
 }
