@@ -10,7 +10,6 @@ import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;
 import edu.gmu.grammar.patterns.PatternsAndTransformedData;
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import weka.attributeSelection.*;
 import weka.classifiers.Classifier;
@@ -19,7 +18,6 @@ import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.output.prediction.*;
 import weka.classifiers.functions.*;
 import weka.classifiers.functions.supportVector.PolyKernel;
-import weka.classifiers.functions.supportVector.RBFKernel;
 //import weka.classifiers.lazy.IBk;
 //import weka.classifiers.trees.*;
 import weka.classifiers.lazy.IBk;
@@ -188,9 +186,9 @@ public class GCProcessMultiClass {
 
 				double d;
 				if (tspValues.length > goodPValues.length)
-					d = DistMethods.calcDistTSAndPattern(tspValues, goodPValues);
+					d = DistMethods.calcDistEuclidean(tspValues, goodPValues);
 				else
-					d = DistMethods.calcDistTSAndPattern(goodPValues, tspValues);
+					d = DistMethods.calcDistEuclidean(goodPValues, tspValues);
 
 				if (d < t) {
 					if (goodP.getFrequency() < tsp.getFrequency()) {
@@ -229,7 +227,7 @@ public class GCProcessMultiClass {
 				for (int i = 0; i < patternNum; i++) {
 
 					TSPattern tsp = allPatterns[i];
-					transformedTS[idxTs][idxPattern] = DistMethods.calcDistTSAndPattern(tsInstance, tsp.getPatternTS());
+					transformedTS[idxTs][idxPattern] = DistMethods.calcDistEuclidean(tsInstance, tsp.getPatternTS());
 					idxPattern++;
 
 				}
@@ -258,7 +256,8 @@ public class GCProcessMultiClass {
 				for (int i = 0; i < patternNum; i++) {
 
 					TSPattern tsp = allPatterns[i];
-					transformedTS[idxTs][idxPattern] = DistMethods.calcDistTSAndPattern(tsInstance, tsp.getPatternTS());
+					//transformedTS[idxTs][idxPattern] = DistMethods.calcDistEuclidean(tsInstance, tsp.getPatternTS());
+					transformedTS[idxTs][idxPattern] = DistMethods.calcDistDTW(tsInstance, tsp.getPatternTS());
 					idxPattern++;
 
 				}
@@ -303,11 +302,11 @@ public class GCProcessMultiClass {
 		Classifier cls;
 		switch(GCProcessMultiClass.CLASSIFIER) {
 			default: case 0:
-				System.out.println("Using SMO");
+				//System.out.println("Using SMO");
 				cls = getPolySvmClassifier(1, 3);
 				break;
 			case 1:
-				System.out.println("Using 1NN-DTW");
+				//System.out.println("Using 1NN-DTW");
 				cls = new IBk();
 				try {
 					((IBk) cls).getNearestNeighbourSearchAlgorithm().setDistanceFunction(new DTW());

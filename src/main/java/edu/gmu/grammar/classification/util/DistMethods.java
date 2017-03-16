@@ -3,7 +3,7 @@ package edu.gmu.grammar.classification.util;
 import java.util.Random;
 
 public class DistMethods {
-	private static final double WARP_WINDOW = 1.00;
+	private static final double WARP_WINDOW = 0.10;
 
 	/**
 	 * Calculating the distance between time series and pattern.
