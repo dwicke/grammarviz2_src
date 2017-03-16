@@ -16,7 +16,7 @@ public class DistMethods {
 	 *            , a series of points for pattern.
 	 * @return
 	 */
-	public static double calcDistTSAndPattern(double[] ts, double[] p) {
+	public static double calcEuclideanDist(double[] ts, double[] p) {
 		double[] slidingWindow = new double[p.length];
 		int patternLen = p.length;
 		int lastStartPoint = ts.length - p.length + 1;
