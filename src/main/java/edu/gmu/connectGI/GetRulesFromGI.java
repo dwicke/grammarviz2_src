@@ -250,9 +250,9 @@ public class GetRulesFromGI {
 
 						double d;
 						if (patternTSI.length > patternTSJ.length)
-							d = DistMethods.calcDistTSAndPattern(patternTSI, patternTSJ);
+							d = DistMethods.calcDistEuclidean(patternTSI, patternTSJ);
 						else
-							d = DistMethods.calcDistTSAndPattern(patternTSJ, patternTSI);
+							d = DistMethods.calcDistEuclidean(patternTSJ, patternTSI);
 
 						withinDistances.add(d);
 					}
@@ -303,9 +303,9 @@ public class GetRulesFromGI {
 
 			double d;
 			if (patternTS1.length > patternTS2.length)
-				d = DistMethods.calcDistTSAndPattern(patternTS1, patternTS2);
+				d = DistMethods.calcDistEuclidean(patternTS1, patternTS2);
 			else
-				d = DistMethods.calcDistTSAndPattern(patternTS2, patternTS1);
+				d = DistMethods.calcDistEuclidean(patternTS2, patternTS1);
 			pDists.add(d);
 		}
 
@@ -494,9 +494,9 @@ public class GetRulesFromGI {
 				double[] ts2 = Arrays.copyOfRange(origTS, start2, end2);
 
 				if (ts1.length > ts2.length)
-					d = DistMethods.calcDistTSAndPattern(ts1, ts2);
+					d = DistMethods.calcDistEuclidean(ts1, ts2);
 				else
-					d = DistMethods.calcDistTSAndPattern(ts2, ts1);
+					d = DistMethods.calcDistEuclidean(ts2, ts1);
 
 				// if (ts1.length > ts2.length)
 				// ts1 = Arrays.copyOfRange(ts1, 0, ts2.length);

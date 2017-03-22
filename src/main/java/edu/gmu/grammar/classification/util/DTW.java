@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public class DTW implements DistanceFunction, Serializable {
 
-    protected double windowSizePercent = 1;
+    protected double windowSizePercent = 10;
     protected Instances insts;
     protected boolean invertSelection;
     protected java.lang.String AttributeIndices;

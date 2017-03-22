@@ -48,9 +48,9 @@ public class PatternsProcess {
 				// d = DistMethods.eculideanDistNorm(ts1, ts2);
 
 				if (ts1.length > ts2.length)
-					d = DistMethods.calcDistTSAndPattern(ts1, ts2);
+					d = DistMethods.calcDistEuclidean(ts1, ts2);
 				else
-					d = DistMethods.calcDistTSAndPattern(ts2, ts1);
+					d = DistMethods.calcDistEuclidean(ts2, ts1);
 
 				// DTW dtw = new DTW(ts1, ts2);
 				// d = dtw.warpingDistance;
