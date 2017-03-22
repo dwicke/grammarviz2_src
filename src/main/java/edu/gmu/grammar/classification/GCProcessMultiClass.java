@@ -10,6 +10,7 @@ import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;
 import edu.gmu.grammar.patterns.PatternsAndTransformedData;
+import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import weka.attributeSelection.*;
 import weka.classifiers.Classifier;
@@ -18,9 +19,9 @@ import weka.classifiers.Evaluation;
 import weka.classifiers.evaluation.output.prediction.*;
 import weka.classifiers.functions.*;
 import weka.classifiers.functions.supportVector.PolyKernel;
+import weka.classifiers.functions.supportVector.RBFKernel;
 //import weka.classifiers.lazy.IBk;
 //import weka.classifiers.trees.*;
-import weka.classifiers.lazy.IBk;
 import weka.core.*;
 
 import java.util.*;
@@ -52,11 +53,32 @@ public class GCProcessMultiClass {
 
 	private boolean isNormalize = true;
 
-	public static int CLASSIFIER = 0;
-
 	public GCProcessMultiClass(int folderNum) {
 		// this.isNormalize = isNormalize;
 		this.folderNum = folderNum;
+	}
+
+	public double[][] transformTSWithPatternsTestTTT(Map<String, List<double[]>> dataset) {
+		int tsNum = 0;
+		for (Entry<String, List<double[]>> edata : dataset.entrySet()) {
+			tsNum += edata.getValue().size();
+		}
+
+		double[][] transformedTS = new double[tsNum][];
+
+		int idxTs = 0;
+		for (Entry<String, List<double[]>> eData : dataset.entrySet()) {
+			String clsLabel = eData.getKey();
+			for (double[] tsInstance : eData.getValue()) {
+
+				double[] tsWithLabel = new double[tsInstance.length + 1];
+				System.arraycopy(tsInstance, 0, tsWithLabel, 0, tsInstance.length);
+				tsWithLabel[tsInstance.length] = Integer.parseInt(clsLabel);
+				transformedTS[idxTs] = tsWithLabel;
+				idxTs++;
+			}
+		}
+		return transformedTS;
 	}
 
 	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls,
@@ -256,8 +278,48 @@ public class GCProcessMultiClass {
 				for (int i = 0; i < patternNum; i++) {
 
 					TSPattern tsp = allPatterns[i];
-					//transformedTS[idxTs][idxPattern] = DistMethods.calcDistEuclidean(tsInstance, tsp.getPatternTS());
 					transformedTS[idxTs][idxPattern] = DistMethods.calcDistDTW(tsInstance, tsp.getPatternTS());
+					idxPattern++;
+
+				}
+				transformedTS[idxTs][idxPattern] = Integer.parseInt(clsLabel);
+				idxTs++;
+			}
+		}
+		return transformedTS;
+	}
+
+	public double[][] transformTSWithPatternsTestShift(TSPattern[] allPatterns, Map<String, List<double[]>> dataset) {
+		int tsNum = 0;
+		int patternNum = allPatterns.length;
+		for (Entry<String, List<double[]>> edata : dataset.entrySet()) {
+			tsNum += edata.getValue().size();
+		}
+
+		double[][] transformedTS = new double[tsNum][patternNum + 1];
+
+		int idxTs = 0;
+		for (Entry<String, List<double[]>> eData : dataset.entrySet()) {
+			String clsLabel = eData.getKey();
+			for (double[] tsInstance : eData.getValue()) {
+
+				// Rebuild time series for shifting
+				int tsLen = tsInstance.length;
+				int midPoint = tsLen / 2;
+				double[] firstPart = Arrays.copyOfRange(tsInstance, midPoint, tsLen);
+				double[] secondPart = Arrays.copyOfRange(tsInstance, 0, midPoint);
+				double[] rebuildedValues = ArrayUtils.addAll(firstPart, secondPart);
+
+				int idxPattern = 0;
+				for (int i = 0; i < patternNum; i++) {
+
+					TSPattern tsp = allPatterns[i];
+					double d1 = DistMethods.calcDistEuclidean(tsInstance, tsp.getPatternTS());
+					double d2 = DistMethods.calcDistEuclidean(rebuildedValues, tsp.getPatternTS());
+					double d = d1;
+					if (d1 > d2)
+						d = d2;
+					transformedTS[idxTs][idxPattern] = d;
 					idxPattern++;
 
 				}
@@ -292,29 +354,90 @@ public class GCProcessMultiClass {
 		return classifier;
 	}
 
+	public static SMO getRbfSvmClassifier(double svmComplexity, double gamma) {
+		SMO classifier = new SMO();
+
+		//classifier.setBuildLogisticModels(false);
+		classifier.setC(svmComplexity);
+		classifier.setChecksTurnedOff(false);
+		classifier.setDebug(false);
+		classifier.setEpsilon(1.0E-12);
+		classifier.setFilterType(new SelectedTag(FILTER_NONE, TAGS_FILTER));
+
+		RBFKernel rk = new RBFKernel();
+		rk.setGamma(gamma);
+
+		rk.setChecksTurnedOff(false);
+		rk.setDebug(false);
+		rk.setCacheSize(250007);
+
+		classifier.setKernel(rk);
+
+		classifier.setNumFolds(-1);
+		classifier.setRandomSeed(1);
+		classifier.setToleranceParameter(0.001);
+
+		return classifier;
+	}
+
 	/**
-	 *
+	 * 
+	 * @param data,
 	 *            J48; 2, NaiveBayes; 3, BayesNet; 4, LibSVM;
 	 * @return
 	 */
 	public Classifier chooseClassifier(Instances data) {
+		//int classfier = 4;
 
-		Classifier cls;
-		switch(GCProcessMultiClass.CLASSIFIER) {
-			default: case 0:
-				//System.out.println("Using SMO");
-				cls = getPolySvmClassifier(1, 3);
-				break;
-			case 1:
-				//System.out.println("Using 1NN-DTW");
-				cls = new IBk();
-				try {
-					((IBk) cls).getNearestNeighbourSearchAlgorithm().setDistanceFunction(new DTW());
-				} catch (Exception e) {
-					System.err.println("Error changing distance function");
-				}
-				break;
-		}
+		Classifier cls = getPolySvmClassifier(1, 3);
+		/*switch (classfier) {
+		case 1:
+			cls = new J48();
+			break;
+		case 2:
+			cls = new NaiveBayes();
+			break;
+		case 3:
+			cls = new BayesNet();
+			break;
+		case 4:
+			cls = getPolySvmClassifier(1, 3);
+			// cls = getRbfSvmClassifier(1, 0.5);
+			// cls = new LibSVM();
+			// try {
+			// String[] options = { "-K", "2", "-S", "0", "-D", "3", "-R",
+			// "0.0", "-N", "0.5", "-M", "100.0", "-G", "0.5", "-C",
+			// "1000.0", "-E", "0.001", "-P", "0.1", "-Q" };
+			// cls.setOptions(options);
+			//
+			// // CVParameterSelection cvClassifier = new
+			// // CVParameterSelection();
+			// // cvClassifier.setClassifier(cls);
+			// // cvClassifier.addCVParameter("G 0.001 2 10");
+			// // cvClassifier.addCVParameter("C 1 1100 10");
+			// // cvClassifier.setNumFolds(5);
+			// // cvClassifier.buildClassifier(data);
+			// // cls.setOptions(cvClassifier.getBestClassifierOptions());
+			// } catch (Exception e) {
+			// e.printStackTrace();
+			// }
+			break;
+		case 5:
+			cls = new Logistic();
+			break;
+		case 6:
+			cls = new RandomForest();
+			break;
+		case 7:
+			cls = new LinearRegression();
+			break;
+		case 8:
+			cls = new IBk();
+			break;
+		default:
+			cls = new NaiveBayes();
+			break;
+		}*/
 
 		return cls;
 	}
@@ -322,16 +445,58 @@ public class GCProcessMultiClass {
 	public Evaluation cvEvaluationAllCls(double[][] transformedTS) {
 		Instances data = buildArff(transformedTS);
 
+		// AttributeSelectedClassifier classifier = new
+		// AttributeSelectedClassifier();
+		// CfsSubsetEval eval = new CfsSubsetEval();
+		// GreedyStepwise search = new GreedyStepwise();
+		// search.setSearchBackwards(true);
+		//
+		// classifier.setClassifier(chooseClassifier());
+		// classifier.setEvaluator(eval);
+		// classifier.setSearch(search);
+		// 10-fold cross-validation
 		Evaluation evaluation;
 		Classifier cls = chooseClassifier(data);
 
 		try {
 			evaluation = new Evaluation(data);
 			evaluation.crossValidateModel(cls, data, folderNum, new Random(1));
+			// System.out.println(evaluation.toSummaryString());
+
+			// double allError = evaluation.errorRate();
 			return evaluation;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public double cvEvaluation(double[][] transformedTS) {
+		Instances data = buildArff(transformedTS);
+
+		// AttributeSelectedClassifier classifier = new
+		// AttributeSelectedClassifier();
+		// CfsSubsetEval eval = new CfsSubsetEval();
+		// GreedyStepwise search = new GreedyStepwise();
+		// search.setSearchBackwards(true);
+		//
+		// classifier.setClassifier(chooseClassifier());
+		// classifier.setEvaluator(eval);
+		// classifier.setSearch(search);
+		// 10-fold cross-validation
+		Evaluation evaluation;
+		Classifier cls = chooseClassifier(data);
+
+		try {
+			evaluation = new Evaluation(data);
+			evaluation.crossValidateModel(cls, data, folderNum, new Random(1));
+			// System.out.println(evaluation.toSummaryString());
+
+			double allError = evaluation.errorRate();
+			return allError;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 1;
 		}
 	}
 
@@ -340,14 +505,22 @@ public class GCProcessMultiClass {
 	}
 
 	public double classifyTransformedData(double[][] trainData, double[][] testData, StringBuffer output) {
+		// return svmClassify(trainData, testData);
 
 		Instances train = buildArff(trainData);
 		Instances test = buildArff(testData);
 
-		int oldClassifier = CLASSIFIER;
-		CLASSIFIER = 0; // Use to change eval type
 		Classifier classifier = chooseClassifier(train);
-		CLASSIFIER = oldClassifier;
+
+		// Select attibutes again
+		// AttributeSelectedClassifier classifier = new
+		// AttributeSelectedClassifier();
+		// CfsSubsetEval eval1 = new CfsSubsetEval();
+		// GreedyStepwise search = new GreedyStepwise();
+		// search.setSearchBackwards(true);
+		// classifier.setClassifier(cls);
+		// classifier.setEvaluator(eval1);
+		// classifier.setSearch(search);
 
 		try {
 			classifier.buildClassifier(train);
@@ -397,6 +570,87 @@ public class GCProcessMultiClass {
 		}
 		return rlt;
 	}
+	//
+	// public double svmClassify(double[][] trainData, double[][] testData) {
+	//
+	// int numFeature = trainData[0].length;
+	//
+	// svm_parameter param = new svm_parameter();
+	// param.svm_type = svm_parameter.C_SVC;
+	// param.kernel_type = svm_parameter.RBF;
+	// param.degree = 3;
+	// param.probability = 0;
+	// param.gamma = 0.5;
+	// param.coef0 = 0;
+	// param.nu = 0.5;
+	// param.C = 1;
+	// param.cache_size = 100;
+	// param.eps = 0.001;
+	// // param.shrinking = 1;
+	//
+	// svm_problem prob = new svm_problem();
+	// int numTrain = trainData.length;
+	// // Number of training data.
+	// prob.l = numTrain;
+	// // Initial label of traning data.
+	// prob.y = new double[numTrain];
+	// // Training data
+	// prob.x = new svm_node[numTrain][];
+	//
+	// for (int i = 0; i < numTrain; i++) {
+	// double[] features = trainData[i];
+	// prob.x[i] = new svm_node[features.length - 1];
+	// for (int j = 0; j < features.length - 1; j++) {
+	// svm_node node = new svm_node();
+	// node.index = j;
+	// node.value = features[j];
+	// prob.x[i][j] = node;
+	// }
+	// // Assign value to label, training data.
+	// prob.y[i] = features[numFeature - 1];
+	// }
+	//
+	// svm_model model = svm.svm_train(prob, param);
+	// int[] x = model.label;
+	// int numTest = testData.length;
+	// int missClsNum = 0;
+	// for (int i = 0; i < numTest; i++) {
+	// double[] featuresTestData = testData[i];
+	// missClsNum += evaluateLibSVM(featuresTestData, model, x.length);
+	// }
+	// double errorRate = (double) missClsNum / (double) numTest;
+	// // System.out.println("LibSVM Error Rate: " + fmt.format(errorRate *
+	// // 100)
+	// // + "%, Incorrect Classified Number: " + missClsNum);
+	//
+	// return errorRate;
+	// }
+	//
+	// public int evaluateLibSVM(double[] features, svm_model model,
+	// int totalClasses) {
+	// svm_node[] nodes = new svm_node[features.length - 1];
+	// for (int i = 0; i < features.length - 1; i++) {
+	// svm_node node = new svm_node();
+	// node.index = i;
+	// node.value = features[i];
+	//
+	// nodes[i] = node;
+	// }
+	//
+	// int[] labels = new int[totalClasses];
+	// svm.svm_get_labels(model, labels);
+	//
+	// double[] prob_estimates = new double[totalClasses];
+	// double v = svm.svm_predict_probability(model, nodes, prob_estimates);
+	//
+	// // System.out.println("(Actual:" + features[features.length - 1]
+	// // + " Prediction:" + v + ")");
+	//
+	// if (features[features.length - 1] == v)
+	// return 0;
+	// else
+	// return 1;
+	// }
 
 	/**
 	 * Selected features from transformed time series.
@@ -480,6 +734,7 @@ public class GCProcessMultiClass {
 	 * Select the most frequent patterns from patterns for each class.
 	 * 
 	 * @param allPatterns
+	 * @param allStartPositions
 	 *            , the percentage of representative pattern number.
 	 * @return
 	 */
