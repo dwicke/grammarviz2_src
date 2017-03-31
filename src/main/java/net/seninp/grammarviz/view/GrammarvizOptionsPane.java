@@ -1,7 +1,8 @@
 package net.seninp.grammarviz.view;
 
 import java.awt.Component;
-import java.awt.Font;
+import java.awt.*;
+import java.awt.event.*;
 import java.text.NumberFormat;
 import java.util.Locale;
 import javax.swing.BorderFactory;
@@ -14,9 +15,14 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.NumberFormatter;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.JSpinner;
 import net.miginfocom.swing.MigLayout;
 import net.seninp.gi.GIAlgorithm;
+import net.seninp.grammarviz.GrammarVizConfiguration;
 import net.seninp.grammarviz.logic.CoverageCountStrategy;
 import net.seninp.grammarviz.session.UserSession;
 
@@ -81,6 +87,14 @@ public class GrammarvizOptionsPane extends JPanel {
   private static final String OUTPUT_CHARTS_LABEL = "Charts folder:";
   private static final JTextField outputChartsFolderName = new JTextField();
 
+  // action commands for distance radio buttons
+  private static final String EUCLIDEAN = "EUCLIDEAN";
+  private static final String DTW = "DTW";
+
+  // DTW window size setter
+  private JSpinner windowSpinner;
+  private JLabel windowLabel;
+
   /**
    * Constructor.
    * 
@@ -125,29 +139,71 @@ public class GrammarvizOptionsPane extends JPanel {
   private Component buildOptionsPanel() {
     // the resulting panel
     //
-    JPanel res = new JPanel(
-        new MigLayout("insets 0 0 0 0", "[fill,grow]", "[5:5:5][fill,grow 100]"));
+    //JPanel res = new JPanel(
+    //    new MigLayout("insets 0 0 0 0", "[fill,grow]", "[5:5:5][fill,grow 100]"));
 
+    JPanel res = new JPanel(new BorderLayout());
     // the "spacer"
-    res.add(new JLabel(), "wrap");
+    //res.add(new JLabel(), "wrap");
 
     // Create the GI radio components.
     //
     JPanel optionsPanel = new JPanel();
-
     optionsPanel.setBorder(BorderFactory.createTitledBorder(
         BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "SAX Options", TitledBorder.LEFT,
         TitledBorder.CENTER, new Font(TITLE_FONT, Font.PLAIN, 10)));
 
     MigLayout optionsPaneLayout = new MigLayout("insets 0 0 0 0", "[]10[grow,fill]", "[]");
-
     optionsPanel.setLayout(optionsPaneLayout);
-
     optionsPanel.add(new JLabel(SAX_NORMALIZATION_THRESHOLD_LABEL));
-
     optionsPanel.add(normalizationThresholdField, "wrap");
+    //res.add(optionsPanel, "pad 0 0 0 0");
+    res.add(optionsPanel, BorderLayout.CENTER);
 
-    res.add(optionsPanel, "pad 0 0 0 0");
+    // Added distance options
+
+    optionsPanel = new JPanel(new GridLayout(0,2));
+    optionsPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(BevelBorder.LOWERED), "Distance Options", TitledBorder.LEFT,
+            TitledBorder.CENTER, new Font(TITLE_FONT, Font.PLAIN, 10)));
+
+    DistanceButtonListener buttonListener = new DistanceButtonListener();
+    JRadioButton euclideanButton = new JRadioButton("Euclidean");
+    euclideanButton.setActionCommand(EUCLIDEAN);
+    euclideanButton.addActionListener(buttonListener);
+
+    JRadioButton dtwButton = new JRadioButton("Dynamic Time Warping");
+    dtwButton.setActionCommand(DTW);
+    dtwButton.addActionListener(buttonListener);
+
+    ButtonGroup distanceButtons = new ButtonGroup();
+    distanceButtons.add(euclideanButton);
+    distanceButtons.add(dtwButton);
+    optionsPanel.add(euclideanButton);
+    optionsPanel.add(new JLabel(""));
+    optionsPanel.add(dtwButton);
+
+    GrammarVizConfiguration config = GrammarVizConfiguration.getConfiguration();
+    int start = config.getDTWWindow();
+    windowSpinner = new JSpinner(new SpinnerNumberModel(start, 0, 100, 1));
+    windowSpinner.addChangeListener(new SpinnerListener());
+    windowLabel = new JLabel("Window: ");
+
+    JPanel windowPanel = new JPanel(new BorderLayout());
+    windowPanel.add(windowLabel, BorderLayout.LINE_START);
+    windowPanel.add(windowSpinner, BorderLayout.CENTER);
+    optionsPanel.add(windowPanel);
+    res.add(optionsPanel, BorderLayout.PAGE_END);
+
+    if (config.getDistanceMeasure() == GrammarVizConfiguration.EUCLIDEAN_DISTANCE) {
+      euclideanButton.setSelected(true);
+      windowSpinner.setEnabled(false);
+      windowLabel.setEnabled(false);
+    } else {
+      dtwButton.setSelected(true);
+      windowSpinner.setEnabled(true);
+      windowLabel.setEnabled(true);
+    }
 
     return res;
   }
@@ -349,5 +405,34 @@ public class GrammarvizOptionsPane extends JPanel {
    */
   public String getAnomalyOutputFileName() {
     return outputAnomalyFileName.getText();
+  }
+
+  private class DistanceButtonListener implements ActionListener {
+    public void actionPerformed(ActionEvent e) {
+      GrammarVizConfiguration config = GrammarVizConfiguration.getConfiguration();
+
+      switch (e.getActionCommand()) {
+        case EUCLIDEAN:
+          config.setDistanceMeasure(GrammarVizConfiguration.EUCLIDEAN_DISTANCE);
+          windowLabel.setEnabled(false);
+          windowSpinner.setEnabled(false);
+          break;
+        case DTW:
+          config.setDistanceMeasure(GrammarVizConfiguration.DTW_DISTANCE);
+          windowLabel.setEnabled(true);
+          windowSpinner.setEnabled(true);
+          break;
+      }
+    }
+  }
+  private class SpinnerListener implements ChangeListener {
+    public void stateChanged(ChangeEvent e) {
+      GrammarVizConfiguration config = GrammarVizConfiguration.getConfiguration();
+      JSpinner spinner = (JSpinner) e.getSource();
+      SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+
+      config.setDTWWindow(model.getNumber().intValue());
+    }
+
   }
 }

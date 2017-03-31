@@ -10,6 +10,7 @@ import edu.gmu.grammar.patterns.PatternsSimilarity;
 import edu.gmu.grammar.patterns.TSPattern;
 import edu.gmu.grammar.patterns.TSPatterns;
 import edu.gmu.grammar.patterns.PatternsAndTransformedData;
+import net.seninp.grammarviz.GrammarVizConfiguration;
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.LoggerFactory;
 import weka.attributeSelection.*;
@@ -261,6 +262,8 @@ public class GCProcessMultiClass {
 	}
 
 	public double[][] transformTSWithPatternsTest(TSPattern[] allPatterns, Map<String, List<double[]>> dataset) {
+		GrammarVizConfiguration config = GrammarVizConfiguration.getConfiguration();
+
 		int tsNum = 0;
 		int patternNum = allPatterns.length;
 		for (Entry<String, List<double[]>> edata : dataset.entrySet()) {
@@ -278,7 +281,14 @@ public class GCProcessMultiClass {
 				for (int i = 0; i < patternNum; i++) {
 
 					TSPattern tsp = allPatterns[i];
-					transformedTS[idxTs][idxPattern] = DistMethods.calcDistDTW(tsInstance, tsp.getPatternTS());
+
+					if (config.getDistanceMeasure() == GrammarVizConfiguration.EUCLIDEAN_DISTANCE) {
+						transformedTS[idxTs][idxPattern] = DistMethods.calcDistEuclidean(tsInstance, tsp.getPatternTS());
+					} else {
+						transformedTS[idxTs][idxPattern] = DistMethods.calcDistDTW(tsInstance, tsp.getPatternTS(),
+																				   config.getDTWWindow());
+					}
+
 					idxPattern++;
 
 				}

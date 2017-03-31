@@ -3,8 +3,6 @@ package edu.gmu.grammar.classification.util;
 import java.util.Random;
 
 public class DistMethods {
-	private static final double WARP_WINDOW = 0.03;
-
 	/**
 	 * Calculating the distance between time series and pattern.
 	 *
@@ -44,29 +42,27 @@ public class DistMethods {
 		return Math.sqrt(dist) / p.length;
 	}
 
-	public static double calcDistDTW(double[] ts, double[] p) {
+	public static double calcDistDTW(double[] ts, double[] p, int window) {
 		if (ts.length - p.length < 0) { return Double.POSITIVE_INFINITY; }
 
 		int lastStart = ts.length - p.length;
 		int randStart = new Random().nextInt(lastStart + 1);
-		double best = dtwDistNorm(ts, p, randStart);
+		double best = dtwDistNorm(ts, p, randStart, window);
 
 		for (int i = 0; i < lastStart; i++) {
-			best = dtwDistNorm(ts, p, i, best);
+			best = dtwDistNorm(ts, p, i, best, window);
 		}
 
 		return best;
 	}
-	private static double dtwDistNorm(double[] ts, double[] p, int start) {
-		return dtwDistNorm(ts, p, start, Double.POSITIVE_INFINITY);
+	private static double dtwDistNorm(double[] ts, double[] p, int start, int window) {
+		return dtwDistNorm(ts, p, start, Double.POSITIVE_INFINITY, window);
 	}
 
-	// TODO: Update to be memory efficient on column/row use
-	private static double dtwDistNorm(double[] ts, double[] p, int start, double best) {
+	private static double dtwDistNorm(double[] ts, double[] p, int start, double best, int window) {
         int n = p.length;
-		int w = (int) Math.round(WARP_WINDOW * n);
+		int w = (int) Math.round(window/100.0 * n);
 		double bestDist = Math.pow(best * n, 2);
-		//if (dtwLowerBoundDist(ts, p, start, w) >= bestDist) { return best; }
 
 		double[][] dtw = new double[n + 1][n + 1];
 		for (int i = 0; i <= n; i++) {
@@ -97,6 +93,8 @@ public class DistMethods {
 
 		return Math.sqrt(dtw[n][n]) / n;
 	}
+
+	// Not used as of yet, first need to make sure DTW is actually useful, then optimize
 
 	private static double dtwLowerBoundDist(double[] ts, double[] p, int start, int r) {
 		double dist = 0;
