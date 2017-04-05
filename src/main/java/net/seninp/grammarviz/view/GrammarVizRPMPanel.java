@@ -1,7 +1,5 @@
 package net.seninp.grammarviz.view;
 
-import com.sun.javafx.collections.ListListenerHelper;
-import com.sun.xml.internal.bind.annotation.OverrideAnnotationOf;
 import net.seninp.grammarviz.session.UserSession;
 import net.seninp.grammarviz.view.table.RPMTableColumns;
 import net.seninp.grammarviz.view.table.RPMTableModel;
