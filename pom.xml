@@ -49,12 +49,8 @@
   </distributionManagement>
   <repositories>
     <repository>
-      <id>sax-vsm_classic</id>
-      <url>https://github.com/jMotif/sax-vsm_classic.git</url>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </snapshots>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
 
@@ -324,7 +320,7 @@
     <dependency>
           <groupId>com.github.jMotif</groupId>
           <artifactId>sax-vsm_classic</artifactId>
-          <version>ebd3ab8bf0cbd03d342b12bbabfea0ec4e886b67</version>
+          <version>ebd3ab8</version>
         <exclusions>
           <exclusion>
             <groupId>org.slf4j</groupId>
