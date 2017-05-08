@@ -73,17 +73,4 @@ public class RepeatedPattern implements Cloneable, Comparable<RepeatedPattern> {
 			return 0;
 	}
 
-	// @Override
-	// public int compareTo(RepeatedPattern arg0) {
-	// Integer p1 = arg0.getSequences().size();
-	// Integer fHere = this.getSequences().size();
-	//
-	// if (fHere > p1) {
-	// return 1;
-	// } else if (fHere < p1) {
-	// return -1;
-	// } else
-	// return 0;
-	// }
-
 }

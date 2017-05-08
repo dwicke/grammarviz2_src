@@ -59,6 +59,12 @@ public class UCRUtils {
 
 	}
 
+	/**
+	 * Converts a string to a double if it is possible, returning Not a Number (NaN) if it fails.
+	 *
+	 * @param string - A string that should hold a decimal number only
+	 * @return - The value from the string or NaN
+	 */
 	private static Double parseValue(String string) {
 		Double res = Double.NaN;
 		try {
@@ -70,6 +76,12 @@ public class UCRUtils {
 		return res;
 	}
 
+	/**
+	 * Goes through the given labeled time series data and relabels the data with a increasing numeric value.
+	 *
+	 * @param res - The data to be relabeled.
+	 * @return - The relabeled data.
+	 */
 	private static Map<String, List<double[]>> refineClassLabel(Map<String, List<double[]>> res) {
 		Set<String> keys = res.keySet();
 		Map<String, List<double[]>> newRes = new HashMap<String, List<double[]>>();

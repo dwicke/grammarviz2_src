@@ -2,7 +2,7 @@ package edu.gmu.grammar.classification;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import edu.gmu.connectGI.GrammarIndcutionMethod;
+import edu.gmu.connectGI.GrammarInductionMethod;
 import edu.gmu.grammar.classification.util.*;
 import edu.gmu.grammar.classification.util.TimeSeriesTrain;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
@@ -84,7 +84,7 @@ public class GCProcessMultiClass {
 
 	public void doClassifyTransformedMultiCls(BestSelectedPatterns[] bestSelectedPatternsAllCls,
 			Map<String, List<double[]>> trainData, Map<String, List<double[]>> testData,
-			GrammarIndcutionMethod giMethod,
+			GrammarInductionMethod giMethod,
 			ClassificationResults results) {
 
 		consoleLogger.debug("Classifing...");

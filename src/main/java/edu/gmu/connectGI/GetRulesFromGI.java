@@ -25,7 +25,7 @@ public class GetRulesFromGI {
 	private GrammarVizChartData chartData;
 	int[] startingPositions;
 	// int orignalLen;
-	GrammarIndcutionMethod giMethod;
+	GrammarInductionMethod giMethod;
 	int windowSize;
 	double[] concatenatedTS;
 
@@ -37,9 +37,9 @@ public class GetRulesFromGI {
 	}
 
 	public ArrayList<int[]> getGrammars(int windowSize, int paaSize, int alphabetSize,
-                                        NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
-                                        GrammarIndcutionMethod giMethod, int[] startingPositions, double rpFrequencyTPer, int maxRPNum,
-                                        double overlapTPer, Boolean isCoverageFre, PatternsSimilarity pSimilarity) {
+										NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
+										GrammarInductionMethod giMethod, int[] startingPositions, double rpFrequencyTPer, int maxRPNum,
+										double overlapTPer, Boolean isCoverageFre, PatternsSimilarity pSimilarity) {
 		this.startingPositions = startingPositions;
 		// this.orignalLen = orignalLen;
 		this.windowSize = windowSize;
@@ -82,8 +82,8 @@ public class GetRulesFromGI {
 	}
 
 	public ArrayList<int[]> getGrammars(int windowSize, int paaSize, int alphabetSize,
-                                        NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
-                                        GrammarIndcutionMethod giMethod, int[] startingPositions) {
+										NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
+										GrammarInductionMethod giMethod, int[] startingPositions) {
 		this.startingPositions = startingPositions;
 		// this.orignalLen = orignalLen;
 		this.windowSize = windowSize;
@@ -154,7 +154,7 @@ public class GetRulesFromGI {
 		ArrayList<RepeatedPattern> allRepeatedPatterns = new ArrayList<RepeatedPattern>();
 
 		int totalRule = 0;
-		if (giMethod.index() == GrammarIndcutionMethod.REPAIR.index()) {
+		if (giMethod.index() == GrammarInductionMethod.REPAIR.index()) {
 			// totalRule = this.getRulesNumberRepair();
 		} else {
 			totalRule = chartData.getRulesNumber();
@@ -163,7 +163,7 @@ public class GetRulesFromGI {
 			ArrayList<RepeatedPattern> tempRepeatedPatterns = new ArrayList<RepeatedPattern>();
 
 			ArrayList<RuleInterval> arrPos = null;
-			if (giMethod.index() == GrammarIndcutionMethod.REPAIR.index()) {
+			if (giMethod.index() == GrammarInductionMethod.REPAIR.index()) {
 				// arrPos = this.getRulePositionsByRuleNumRepair(idx);
 			} else {
 
@@ -211,7 +211,7 @@ public class GetRulesFromGI {
 		// removeOverlapBetweenCluster(allRepeatedPatterns);
 		removeOverlapWithinCluster(allRepeatedPatterns, pDiffThreshold);
 
-		// If the threshold for similarity hasn't be calculated, this method
+		// If the threshold for similarity hasn't been calculated, this method
 		// will calculate it.
 		// It will be calculated only once.
 		if (!pSimilarity.getIsTSimilarSetted()) {
@@ -546,7 +546,7 @@ public class GetRulesFromGI {
 
 		int bestFrequency = 0;
 		int totalRule = 0;
-		if (giMethod.index() == GrammarIndcutionMethod.REPAIR.index()) {
+		if (giMethod.index() == GrammarInductionMethod.REPAIR.index()) {
 			// totalRule = this.getRulesNumberRepair();
 		} else {
 			totalRule = chartData.getRulesNumber();
@@ -554,7 +554,7 @@ public class GetRulesFromGI {
 		// Get the frequency of the most frequent pattern
 		for (int idx = 1; idx < totalRule; idx++) {
 			ArrayList<RuleInterval> arrPos = null;
-			if (giMethod.index() == GrammarIndcutionMethod.REPAIR.index()) {
+			if (giMethod.index() == GrammarInductionMethod.REPAIR.index()) {
 				// arrPos = chartData.getRulePositionsByRuleNumRepair(idx);
 			} else {
 
@@ -593,8 +593,8 @@ public class GetRulesFromGI {
 	 * @throws IOException
 	 */
 	public void processData(int windowSize, int paaSize, int alphabetSize,
-                            NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
-                            GrammarIndcutionMethod giMethod, int[] startingPositions) throws IOException {
+							NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
+							GrammarInductionMethod giMethod, int[] startingPositions) throws IOException {
 
 		double normalizationThreshold = 0.005;
 		boolean useSlidingWindow = true;
@@ -705,7 +705,7 @@ public class GetRulesFromGI {
 	// public ArrayList<RepeatedPattern> getAllPatterns(int wdSize, int paaSize,
 	// int alphabetaSize, String numerosityReductionStrategy,
 	// double[] concatenatedTS, int orignalLen,
-	// GrammarIndcutionMethod giMethod, int[] startingPositions) {
+	// GrammarInductionMethod giMethod, int[] startingPositions) {
 	// boolean useSlidingWindow = true;
 	//
 	// MotifChartData chartData = new MotifChartData(concatenatedTS,

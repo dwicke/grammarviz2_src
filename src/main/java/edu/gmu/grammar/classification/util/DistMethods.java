@@ -3,17 +3,18 @@ package edu.gmu.grammar.classification.util;
 import java.util.Random;
 
 public class DistMethods {
+
 	/**
-	 * Calculating the distance between time series and pattern.
+	 * Calculating the distance between time series and pattern using euclidean.
 	 *
-	 * @param ts
-	 *            , a series of points for time series.
-	 * @param p
-	 *            , a series of points for pattern.
-	 * @return
+	 * @param ts - a series of points for time series.
+	 * @param p  - a series of points for pattern.
+	 * @return - the euclidean distance between ts and p
 	 */
 	public static double calcDistEuclidean(double[] ts, double[] p) {
-		if (ts.length - p.length < 0) { return Double.POSITIVE_INFINITY; }
+		if (ts.length - p.length < 0) {
+			return Double.POSITIVE_INFINITY;
+		}
 
 		int lastStart = ts.length - p.length;
 		int randStart = new Random().nextInt(lastStart + 1);
@@ -26,24 +27,53 @@ public class DistMethods {
 		return best;
 	}
 
+	/**
+	 * Calculates the euclidean distance normal for ts and p with a starting position w.
+	 *
+	 * @param ts - a series of points for time series.
+	 * @param p  - a series of points for pattern.
+	 * @param w  - a starting position.
+	 * @return - the normal distance measure.
+	 */
 	private static double euclideanDistNorm(double[] ts, double[] p, int w) {
 		return euclideanDistNorm(ts, p, w, Double.POSITIVE_INFINITY);
 	}
 
+	/**
+	 * Calculates the euclidean distance normal for ts and p with a starting position start.
+	 *
+	 * @param ts    - a series of points for time series.
+	 * @param p     - a series of points for pattern.
+	 * @param start - a starting position.
+	 * @param best  - the current best distance
+	 * @return - the normal distance measure.
+	 */
 	private static double euclideanDistNorm(double[] ts, double[] p, int start, double best) {
 		double bestDist = Math.pow(best * p.length, 2);
 		double dist = 0;
 
 		for (int i = 0; i < p.length; i++) {
 			dist += Math.pow(ts[start + i] - p[i], 2);
-			if (dist > bestDist) { return best; }
+			if (dist > bestDist) {
+				return best;
+			}
 		}
 
 		return Math.sqrt(dist) / p.length;
 	}
 
+	/**
+	 * Calculated the distance between time series and pattern using Dynamic Time Warping.
+	 *
+	 * @param ts     - a series of points for time series.
+	 * @param p      - a series of points for patter
+	 * @param window - a window size to be used in DTW, reduces the complexity.
+	 * @return - the DTW distance between ts and p.
+	 */
 	public static double calcDistDTW(double[] ts, double[] p, int window) {
-		if (ts.length - p.length < 0) { return Double.POSITIVE_INFINITY; }
+		if (ts.length - p.length < 0) {
+			return Double.POSITIVE_INFINITY;
+		}
 
 		int lastStart = ts.length - p.length;
 		int randStart = new Random().nextInt(lastStart + 1);
@@ -55,13 +85,52 @@ public class DistMethods {
 
 		return best;
 	}
+
+	/**
+	 * Calculates the DTW distance normal for ts and p with a starting position start.
+	 *
+	 * @param ts     - a series of points for time series.
+	 * @param p      - a series of points for pattern.
+	 * @param start  - a starting position.
+	 * @param window - a window size to be used in DTW, reduces the complexity.
+	 * @return - the normal distance measure.
+	 */
 	private static double dtwDistNorm(double[] ts, double[] p, int start, int window) {
 		return dtwDistNorm(ts, p, start, Double.POSITIVE_INFINITY, window);
 	}
 
+	/**
+	 * Calculates the DTW distance normal for ts and p with a starting position start.
+	 *
+	 * Dynamic Time Warping algorithm:
+	 * DTW := array [0..n, 0..m]
+	 *
+	 * w := max(w, abs(n-m)) // adapt window size (*)
+	 *
+	 * for i := 0 to n
+	 *  for j:= 0 to m
+	 *      DTW[i, j] := infinity
+	 * DTW[0, 0] := 0
+	 *
+	 * for i := 1 to n
+	 *  for j := max(1, i-w) to min(m, i+w)
+	 *      cost := d(s[i], t[j])
+	 *      DTW[i, j] := cost + minimum(DTW[i-1, j  ],    // insertion
+	 *                                  DTW[i  , j-1],    // deletion
+	 *                                  DTW[i-1, j-1])    // match
+	 *
+	 * return DTW[n, m]
+	 *
+	 * @param ts     - a series of points for time series.
+	 * @param p      - a series of points for pattern.
+	 * @param start  - a starting position.
+	 * @param best   - the current best distance
+	 * @param window - a window size to be used in DTW, reduces the complexity.
+	 * @return - the normal distance measure.
+	 */
 	private static double dtwDistNorm(double[] ts, double[] p, int start, double best, int window) {
-        int n = p.length;
-		int w = (int) Math.round(window/100.0 * n);
+		int n = p.length;
+		int w = (int) Math.round(window / 100.0 * n);
 		double bestDist = Math.pow(best * n, 2);
 
 		double[][] dtw = new double[n + 1][n + 1];
@@ -73,7 +142,7 @@ public class DistMethods {
 		dtw[0][0] = 0;
 
 		for (int i = 1; i <= n; i++) {
-		    int jMin = (i - w > 1) ? i - w : 1;
+			int jMin = (i - w > 1) ? i - w : 1;
 			int jMax = (i + w < n) ? i + w : n;
 
 			for (int j = jMin; j <= jMax; j++) {
@@ -87,52 +156,12 @@ public class DistMethods {
 				}
 
 				dtw[i][j] = dist + min;
-				if (dtw[i][j] > bestDist) { return best; }
+				if (dtw[i][j] > bestDist) {
+					return best;
+				}
 			}
 		}
 
 		return Math.sqrt(dtw[n][n]) / n;
-	}
-
-	// Not used as of yet, first need to make sure DTW is actually useful, then optimize
-
-	private static double dtwLowerBoundDist(double[] ts, double[] p, int start, int r) {
-		double dist = 0;
-		for (int i = 0; i < p.length; i++) {
-			double u = upperBound(p, i, r);
-			double l = lowerBound(p, i, r);
-
-			if (ts[start + i] > u) {
-				dist += Math.pow(ts[start + i] - u, 2);
-			} else if (ts[start + i] < l) {
-				dist += Math.pow(ts[start + i] - l, 2);
-			}
-		}
-
-		return dist;
-	}
-
-	private static double upperBound(double q[], int idx, int r) {
-		int max = (idx + r < q.length) ? idx + r : q.length - 1;
-		int min = (idx - r > 0)        ? idx - r : 0;
-
-		double upper = q[min];
-		for (int i = min + 1; i <= max; i++) {
-			if (upper < q[i]) { upper = q[i]; }
-		}
-
-		return upper;
-	}
-
-	private static double lowerBound(double q[], int idx, int r) {
-		int max = (idx + r < q.length) ? idx + r : q.length - 1;
-		int min = (idx - r > 0)        ? idx - r : 0;
-
-		double lower = q[min];
-		for (int i = min + 1; i <= max; i++) {
-			if (lower > q[i]) { lower = q[i]; }
-		}
-
-		return lower;
 	}
 }

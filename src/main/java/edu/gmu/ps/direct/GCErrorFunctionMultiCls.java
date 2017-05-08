@@ -3,7 +3,7 @@ package edu.gmu.ps.direct;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import edu.gmu.connectGI.ConnectGI;
-import edu.gmu.connectGI.GrammarIndcutionMethod;
+import edu.gmu.connectGI.GrammarInductionMethod;
 import edu.gmu.grammar.classification.GCProcessMultiClass;
 import edu.gmu.grammar.classification.util.*;
 import edu.gmu.grammar.classification.util.TimeSeriesTrain;
@@ -38,7 +38,7 @@ public class GCErrorFunctionMultiCls {
 	private ArrayList<TimeSeriesTrain> trainData;
 	private Map<String, List<TimeSeriesTrain>> trainDataPerClass;
 
-	private GrammarIndcutionMethod giMethod;
+	private GrammarInductionMethod giMethod;
 	private int folderNum;
 	private double rpFrequencyTPer;
 	private int maxRPNum;
@@ -59,10 +59,10 @@ public class GCErrorFunctionMultiCls {
 	 *
 	 */
 	public GCErrorFunctionMultiCls(Map<String, List<double[]>> inputTrainData,
-			NumerosityReductionStrategy strategy,
-			GrammarIndcutionMethod giMethod, int folderNum,
-			double rpFrequencyTPer, int maxRPNum, double overlapTPer,
-			Boolean isCoverageFre, PatternsSimilarity pSimilarity) {
+								   NumerosityReductionStrategy strategy,
+								   GrammarInductionMethod giMethod, int folderNum,
+								   double rpFrequencyTPer, int maxRPNum, double overlapTPer,
+								   Boolean isCoverageFre, PatternsSimilarity pSimilarity) {
 		this.trainData = new ArrayList<TimeSeriesTrain>();
 		this.trainDataPerClass = new HashMap<String, List<TimeSeriesTrain>>();
 		for (Entry<String, List<double[]>> e : inputTrainData.entrySet()) {

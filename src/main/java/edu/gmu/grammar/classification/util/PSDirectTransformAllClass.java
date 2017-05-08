@@ -2,7 +2,7 @@ package edu.gmu.grammar.classification.util;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
-import edu.gmu.connectGI.GrammarIndcutionMethod;
+import edu.gmu.connectGI.GrammarInductionMethod;
 import edu.gmu.dataprocess.UCRUtils;
 import edu.gmu.grammar.classification.GCProcessMultiClass;
 import edu.gmu.grammar.patterns.BestSelectedPatterns;
@@ -93,8 +93,6 @@ public class PSDirectTransformAllClass {
 	private ValuePointColored minimum = ValuePointColored.at(
 			Point.at(0), Double.POSITIVE_INFINITY, false);
 
-	// private BestCombination[] bestcombs;
-	// private TopKBestPatterns[] bestKResults;
 	private BestSelectedPatterns[] bestSelectedPatternsAllClass;
 
 	private int[] upperBounds;
@@ -114,15 +112,26 @@ public class PSDirectTransformAllClass {
 
 	private NumerosityReductionStrategy allStrategy = NumerosityReductionStrategy.EXACT;
 
-	// private Boolean isShifted = false;
-	private GrammarIndcutionMethod giMethod = GrammarIndcutionMethod.SEQUITUR;
+	private GrammarInductionMethod giMethod = GrammarInductionMethod.SEQUITUR;
 
 
+	/**
+	 * Loads training data from a path, setting the appropriate fields.
+	 *
+	 * @param trainingDataFilePath - A file path to RPM formatted (UCR) data.
+	 * @throws IOException
+	 */
 	private void loadTrainingData(String trainingDataFilePath) throws IOException {
 		TRAINING_DATA_PATH = trainingDataFilePath;
 		trainData = UCRUtils.readUCRData(TRAINING_DATA_PATH);
 	}
 
+	/**
+	 * Converts a string to a double if it is possible, returning Not a Number (NaN) if it fails.
+	 *
+	 * @param string - A string that should hold a decimal number only
+	 * @return - The value from the string or NaN
+	 */
 	private Double parseValue(String string) {
 		Double res = Double.NaN;
 		try {
@@ -134,6 +143,12 @@ public class PSDirectTransformAllClass {
 		return res;
 	}
 
+	/**
+	 * Goes through the given labeled time series data and relabels the data with a increasing numeric value.
+	 *
+	 * @param res - The data to be relabeled.
+	 * @return - The relabeled data.
+	 */
 	private Map<String, List<double[]>> refineClassLabel(Map<String, List<double[]>> res) {
 		Set<String> keys = res.keySet();
 		Map<String, List<double[]>> newRes = new HashMap<String, List<double[]>>();
@@ -155,6 +170,15 @@ public class PSDirectTransformAllClass {
 		return newRes;
 	}
 
+	/**
+	 * Converts the time series data from the data structures used by
+	 * GrammarViz (2D double array plus an Array of strings) to that used by RPM (A HashMap with labels as keys and
+	 * a List of doubles arrays of time series).
+	 *
+	 * @param data - 2D double array of time series data
+	 * @param labels - Array of labels, there must be a label for every array of times series data
+	 * @return - A Map from the labels to a List of double arrays
+	 */
 	public Map<String, List<double[]>> convertGrammarVizData(double[][] data, String[] labels) {
 		if(data.length != labels.length) {
 			this.consoleLogger.error("The number of classes (" +
@@ -187,36 +211,61 @@ public class PSDirectTransformAllClass {
 		return res;
 	}
 
+	/**
+	 * This is the internal function for training RPM using GrammarViz, it is used by public facing functions only.
+	 *
+	 * @param strategy - The strategy to be used for sampling.
+	 * @param lowerWindow - The lower bounds for the Window Size.
+	 * @param upperWindow - The upper bounds for the Window Size.
+	 * @param lowerPaa - The lower bounds for the PAA Size.
+	 * @param upperPaa - The upper bounds for the PAA Size.
+	 * @param lowerAlphabet - The lower bounds for the Alphabet.
+	 * @param upperAlphabet - The upper bounds for the Alphabet.
+	 * @param iterations - The maximum number of times to train on the data before returning
+	 *                      (Will end before if threshold is met).
+	 * @return An object that represent the trained model and associating metadata.
+	 */
 	private RPMTrainedData RPMTrainPrivate(String strategy,
 												  int lowerWindow, int upperWindow,
 												  int lowerPaa, int upperPaa,
 												  int lowerAlphabet, int upperAlphabet,
 												  int iterations) {
+		// Create RPM Trained Model representative object
 		RPMTrainedData rpmTrainedOutput = new RPMTrainedData();
+		// Set model's training data path record
 		rpmTrainedOutput.training_data_path = TRAINING_DATA_PATH;
+		// Set model's training data record
 		rpmTrainedOutput.trainData = trainData;
+		// Set model's sampling strategy record
 		rpmTrainedOutput.allStrategy = strategy;
+		// Set training phase's Numerosity Reduction Strategy
 		allStrategy = NumerosityReductionStrategy.valueOf(strategy);
 
-		// window size, PAA size, alphabet size.
+		// Set the window size, PAA size, alphabet size lower and upper bounds
 		rpmTrainedOutput.lowerBounds = lowerBounds = new int[] {lowerWindow, lowerPaa, lowerAlphabet};
 		rpmTrainedOutput.upperBounds = upperBounds = new int[] {upperWindow, upperPaa, upperAlphabet};
 
+		// Setup configuration defaults
 		rpmTrainedOutput.folderNum = FOLDERNUM = 5;
 		rpmTrainedOutput.rpFrequencyTPer = rpFrequencyTPer = 0.2;
 		rpmTrainedOutput.maxRPNum = maxRPNum = 50;
 		rpmTrainedOutput.overlapTPer = overlapTPer = 0.5;
 		rpmTrainedOutput.isCoverageFre = isCoverageFre = true;
 		rpmTrainedOutput.pSimilarity = 0.02;
+
+		// Configure training phase Pattern Similarity function
 		pSimilarity = new PatternsSimilarity(0.02);
 
+		// Set the maximum number of iterations
 		rpmTrainedOutput.iterations_num = iterations_num = iterations; // Default 5
 
 		consoleLogger.info("running sampling for " + giMethod
 			+ " with " + allStrategy.toString() + " strategy...");
 
+		// Start training, storing the results
 		rpmTrainedOutput.bestSelectedPatternsAllClass = sample(allStrategy);
 
+		// Pull and store the best trained Window Size, PAA Size, and Alphabet
 		int[] bestParams = rpmTrainedOutput.bestSelectedPatternsAllClass[0].getBestParams();
 		rpmTrainedOutput.windowSize = bestParams[0];
 		rpmTrainedOutput.paa = bestParams[1];
@@ -225,24 +274,58 @@ public class PSDirectTransformAllClass {
 		return rpmTrainedOutput;
 	}
 
+	/**
+	 * Trains the RPM model with all options set to default.
+	 *
+	 * @param trainingDataFilePath - Path to the file containing the training data.
+	 * @param data - Times series data in a 2D double array with each entry being an array of time stamps.
+	 * @param labels - The labels that are associated with the time series in data (data[0] is label[0]).
+	 * @return - An object that represent the trained model and associating metadata.
+	 * @throws IOException -
+	 */
 	public RPMTrainedData RPMTrain(String trainingDataFilePath,
 								   double[][] data, String[] labels) throws IOException {
+		// Call main RPM train function
 		return this.RPMTrain(trainingDataFilePath,
 				data, labels,
 				DEFAULT_STRATEGY);
 	}
 
+	/**
+	 * Trains the RPM model with the selected strategy and all other options set to default.
+	 *
+	 * @param trainingDataFilePath - Path to the file containing the training data.
+	 * @param data - Times series data in a 2D double array with each entry being an array of time stamps.
+	 * @param labels - The labels that are associated with the time series in data (data[0] is label[0]).
+	 * @param strategy - The strategy to be used for sampling.
+	 * @return - An object that represent the trained model and associating metadata.
+	 * @throws IOException
+	 */
 	public RPMTrainedData RPMTrain(String trainingDataFilePath,
 								   double[][] data, String[] labels,
 								   String strategy) throws IOException {
+		// Call main RPM train function
 		return this.RPMTrain(trainingDataFilePath, data, labels, strategy,
 				DEFAULT_NUMBER_OF_ITERATIONS);
 	}
+
+	/**
+	 * Trains the RPM model with the selected strategy, number of iterations and all other options set to default.
+	 *
+	 * @param trainingDataFilePath - Path to the file containing the training data.
+	 * @param data - Times series data in a 2D double array with each entry being an array of time stamps.
+	 * @param labels - The labels that are associated with the time series in data (data[0] is label[0]).
+	 * @param strategy - The strategy to be used for sampling.
+	 * @param iterations - The maximum number of times to train on the data before returning
+	 *                      (Will end before if threshold is met).
+	 * @return - An object that represent the trained model and associating metadata.
+	 * @throws IOException
+	 */
 	public RPMTrainedData RPMTrain(String trainingDataFilePath,
 								   double[][] data, String[] labels,
 								   String strategy, int iterations) throws IOException {
 
-		//this.loadTrainingData(trainingDataFilePath);
+		// Load data path and convert data to GrammarViz Supported format
 		this.TRAINING_DATA_PATH = trainingDataFilePath;
 		this.trainData = this.convertGrammarVizData(data, labels);
 
@@ -258,6 +341,7 @@ public class PSDirectTransformAllClass {
 		int uWLen = (int) (tsLen * uper);
 		int ub = uWLen > 1 ? uWLen : 1;
 
+		// Call main RPM train function
 		return this.RPMTrainPrivate(strategy,
 				// Lower & Upper Window Default
 				lb, ub,
@@ -268,6 +352,24 @@ public class PSDirectTransformAllClass {
 				iterations);
 	}
 
+	/**
+	 * * This is the internal function for training RPM using GrammarViz, it is used by public facing functions only.
+	 *
+	 * @param trainingDataFilePath - Path to the file containing the training data.
+	 * @param data - Times series data in a 2D double array with each entry being an array of time stamps.
+	 * @param labels - The labels that are associated with the time series in data (data[0] is label[0]).
+	 * @param strategy - The strategy to be used for sampling.
+	 * @param lowerWindow - The lower bounds for the Window Size.
+	 * @param upperWindow - The upper bounds for the Window Size.
+	 * @param lowerPaa - The lower bounds for the PAA Size.
+	 * @param upperPaa - The upper bounds for the PAA Size.
+	 * @param lowerAlphabet - The lower bounds for the Alphabet.
+	 * @param upperAlphabet - The upper bounds for the Alphabet.
+	 * @param iterations - The maximum number of times to train on the data before returning
+	 *                      (Will end before if threshold is met).
+	 * @return An object that represent the trained model and associating metadata.
+	 * @throws IOException
+	 */
 	public RPMTrainedData RPMTrain(String trainingDataFilePath,
 								   double[][] data, String[] labels,
 								   String strategy,
@@ -276,10 +378,11 @@ public class PSDirectTransformAllClass {
 								   int lowerAlphabet, int upperAlphabet,
 								   int iterations) throws IOException {
 
-		//this.loadTrainingData(trainingDataFilePath);
+		// Load data path and convert data to GrammarViz Supported format
 		this.TRAINING_DATA_PATH = trainingDataFilePath;
 		this.trainData = this.convertGrammarVizData(data, labels);
 
+		// Call main RPM train function
 		return this.RPMTrainPrivate(strategy,
 				lowerWindow, upperWindow,
 				lowerPaa, upperPaa,
@@ -288,15 +391,23 @@ public class PSDirectTransformAllClass {
 
 	}
 
+	/**
+	 * Loads a trained RPM model for use with testing, setting all parameters to match that in the model.
+	 * @param trainedData - The object that represents the trained RPM model.
+	 */
 	public void loadRPMTrain(RPMTrainedData trainedData) {
+		// Load data and data path
 		TRAINING_DATA_PATH = trainedData.training_data_path;
 		trainData = trainedData.trainData;
+
+		// Load Numerosity Reduction Strategy
 		allStrategy = NumerosityReductionStrategy.valueOf(trainedData.allStrategy);
 
-		// window size, PAA size, alphabet size.
+		// Set window size, PAA size, alphabet size lower and upper bounds.
 		lowerBounds = trainedData.lowerBounds;
 		upperBounds = trainedData.upperBounds;
 
+		// Set all RPM parameters
 		FOLDERNUM = trainedData.folderNum;
 		rpFrequencyTPer = trainedData.rpFrequencyTPer;
 		maxRPNum = trainedData.maxRPNum;
@@ -304,33 +415,57 @@ public class PSDirectTransformAllClass {
 		isCoverageFre = trainedData.isCoverageFre;
 		pSimilarity = new PatternsSimilarity(trainedData.pSimilarity);
 
+		// Set the maximum number of iterations
 		iterations_num = trainedData.iterations_num; // Default 5
 
 		consoleLogger.info("loading sample for " + giMethod
 				+ " with " + allStrategy.toString() + " strategy...");
 
+		// The core of the model gets loaded here
 		bestSelectedPatternsAllClass = trainedData.bestSelectedPatternsAllClass;
 	}
 
+	/**
+	 * Tests a sample against a trained model to verify the models accuracy.
+	 *
+	 * @param testingDataFilePath - Path to the file containing the test data.
+	 * @param data - Times series test data in a 2D double array with each entry being an array of time stamps.
+	 * @param labels - The labels that are associated with the time series in data (data[0] is label[0]).
+	 * @return The object that stores results from the testing phase, including all statistics.
+	 * @throws IOException
+	 */
 	public ClassificationResults RPMTestData(String testingDataFilePath,
 											 double[][] data, String[] labels) throws IOException {
+		// Create results object to store the statistics
 		ClassificationResults results = new ClassificationResults();
+		// Load test data path
 		results.testDataPath = TEST_DATA_PATH = testingDataFilePath;
-		//results.testData = testData = UCRUtils.readUCRData(TEST_DATA_PATH);
+		// Convert test data to GrammarViz compatible format (Used for information display)
 		results.testData = this.testData = convertGrammarVizData(data, labels);
 
+		// Test the model
 		classifyWithTransformedDataAllCls(bestSelectedPatternsAllClass, results);
 
 		return results;
 	}
 
+	/**
+	 *
+	 * @param bestSelectedPatterns - An array of time searies patterns that are an output of RPM.
+	 * @param results - An object that stores the results of the evaluation phase during the testing phase
+	 * @throws IndexOutOfBoundsException
+	 */
 	private void classifyWithTransformedDataAllCls(BestSelectedPatterns[] bestSelectedPatterns,
 												   ClassificationResults results) throws IndexOutOfBoundsException {
+		// Object that handles the processing
 		GCProcessMultiClass gcp = new GCProcessMultiClass(FOLDERNUM);
 		gcp.doClassifyTransformedMultiCls(bestSelectedPatterns,
 				trainData, testData, giMethod, results);
 	}
 
+	/**
+	 * This function makes the best selection of the candidate patterns using the selected indices.
+	 */
 	private void update() {
 		resultMinimum = minimum(functionValues);
 		// getting minimum and giving it at last points
@@ -392,6 +527,11 @@ public class PSDirectTransformAllClass {
 		}
 	}
 
+	/**
+	 *
+	 * @param strategy
+	 * @return
+	 */
 	private BestSelectedPatterns[] sample(
             NumerosityReductionStrategy strategy) {
 
@@ -488,7 +628,7 @@ public class PSDirectTransformAllClass {
 		ArrayList<Integer> potentiallyOptimalRectangles = null;
 
 		// optimization loop
-		//
+		// SAX Parameter Selection
 		for (int ctr = 0; ctr < iterations_num; ctr++) {
 			// The minimal error and its index.
 			resultMinimum = minimum(functionValues);
@@ -512,6 +652,11 @@ public class PSDirectTransformAllClass {
 
 	}
 
+	/**
+	 *
+	 * @param errorValue
+	 * @param point
+	 */
 	private void updateBest(double[] errorValue, Point point) {
 
 		double[] coords = point.toArray();
@@ -739,6 +884,8 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Identify the set of all potentially optimal rectangles.
+	 *
+	 * @return
 	 */
 	private ArrayList<Integer> identifyPotentiallyRec() {
 
@@ -806,6 +953,10 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Finds all points on the convex hull, even redundant ones.
+	 *
+	 * @param x
+	 * @param y
+	 * @return
 	 */
 	private double[] conhull(double[] x, double[] y) {
 		// System.out.println(Arrays.toString(x) + " : " + Arrays.toString(y));
@@ -920,6 +1071,10 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * M is the size, v is the index, returns the previous index value.
+	 *
+	 * @param idx
+	 * @param size
+	 * @return
 	 */
 	private int pred(int idx, int size) {
 		if ((idx + 1) == 1) {
@@ -960,6 +1115,9 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Finds an index and a minimal value of an array.
+	 *
+	 * @param array
+	 * @return
 	 */
 	private double[] minimum(double[] array) {
 		Double min = array[0];
@@ -976,6 +1134,9 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Finds an index and a minimal value of an array.
+	 *
+	 * @param array
+	 * @return
 	 */
 	private double[] minimum(ArrayList<Double> array) {
 		Double min = array.get(0);
@@ -992,6 +1153,10 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Finds matches.
+	 *
+	 * @param array
+	 * @param value
+	 * @return
 	 */
 	private Integer[] findMatches(Double[] array, double value) {
 		ArrayList<Integer> res = new ArrayList<Integer>();
@@ -1005,6 +1170,10 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Finds matches.
+	 *
+	 * @param array
+	 * @param value
+	 * @return
 	 */
 	private Integer[] findMatches(ArrayList<Double> array, double value) {
 		ArrayList<Integer> res = new ArrayList<Integer>();
@@ -1018,6 +1187,10 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Finds array elements that are not equal to the value up to threshold.
+	 *
+	 * @param array
+	 * @param value
+	 * @return
 	 */
 	private Integer[] findNonMatches(ArrayList<Double> array,
 			double value) {
@@ -1032,6 +1205,10 @@ public class PSDirectTransformAllClass {
 
 	/**
 	 * Returns arrays intersection.
+	 *
+	 * @param arr1
+	 * @param arr2
+	 * @return
 	 */
 	private Integer[] findArrayIntersection(Integer[] arr1,
 			Integer[] arr2) {

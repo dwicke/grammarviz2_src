@@ -15,13 +15,22 @@ public class ConnectGI {
 	/**
 	 * Get patterns from concatenated data with Sequitur.
 	 * 
-	 * @param concatenateData
-	 * @param params
+	 * @param concatenateData - a Map from class label to the concatenated time series data.
+	 * @param params - Parameter Vector: Window Size ([0][0]), PAA Size ([0][1]), Alphabet Size ([0][2]),
+	 *                  Numerosity Reduction Strategy ([0][3]).
+	 * @param giMethod - The Grammar Induction Method to be used.
+	 * @param allStartPositions - A map for every class label to an integer array of all the start points in the
+	 *                          concatenated data.
+	 * @param rpFrequencyTPer @TODO.
+	 * @param maxRPNum @TODO.
+	 * @param overlapTPer @TODO.
+	 * @param isCoverageFre @TODO.
+	 * @param pSimilarity - the similarity between patterns.
 	 * @return
 	 */
 	public HashMap<String, TSPatterns> getPatternsFromSequitur(
 			HashMap<String, double[]> concatenateData, int[][] params,
-			GrammarIndcutionMethod giMethod,
+			GrammarInductionMethod giMethod,
 			HashMap<String, int[]> allStartPositions, double rpFrequencyTPer,
 			int maxRPNum, double overlapTPer, Boolean isCoverageFre,
 			PatternsSimilarity pSimilarity) {
@@ -34,7 +43,7 @@ public class ConnectGI {
 		int strategy = params[0][3];
 		NumerosityReductionStrategy nRStrategy = NumerosityReductionStrategy
 				.fromValue(strategy);
-		// DataProcessor.writeConcatenatedData(concatenateData);
+
 		for (Entry<String, double[]> entry : concatenateData.entrySet()) {
 			String classLabel = entry.getKey();
 			double[] concatenatedTS = entry.getValue();
@@ -65,15 +74,14 @@ public class ConnectGI {
 	 * Read subsequences according to the location of patterns in concatenated
 	 * time series.
 	 * 
-	 * @param concatenatedTS
-	 * @param patternsLocation
-	 * @param patterns
+	 * @param concatenatedTS - the concatenated time series.
+	 * @param patternsLocation - list of locations for each pattern of where it is in the concatenatedTS.
+	 * @param patterns - list of time series patterns.
+	 * @param startingPositions - list of positions where the time series entries are located in concatenatedTS.
 	 */
 	public static void readPatterns(double[] concatenatedTS,
 			ArrayList<int[]> patternsLocation, TSPatterns patterns,
 			int[] startingPositions) {
-		// int[] startingPositions = getIntervals(originalLen,
-		// concatenatedTS.length);
 
 		// Start place, length, frequency.
 		for (int[] location : patternsLocation) {
@@ -97,6 +105,14 @@ public class ConnectGI {
 
 	}
 
+	/**
+	 * Find the index of a pattern in the concatenated list using a list of starting positions and the patterns
+	 * starting position.
+	 *
+	 * @param startingPositions - All the start positions.
+	 * @param startPosition - The start position of the pattern in question.
+	 * @return - The index of the pattern.
+	 */
 	public static int findIdx(int[] startingPositions, int startPosition) {
 		int idx = 1;
 		for (int sp : startingPositions) {

@@ -41,19 +41,10 @@ public class PatternsProcess {
 				int end2 = saxPos2.getEnd();
 				double[] ts2 = Arrays.copyOfRange(origTS, start2, end2);
 
-				// if (ts1.length > ts2.length)
-				// ts1 = Arrays.copyOfRange(ts1, 0, ts2.length);
-				// else if (ts1.length < ts2.length)
-				// ts2 = Arrays.copyOfRange(ts2, 0, ts1.length);
-				// d = DistMethods.eculideanDistNorm(ts1, ts2);
-
 				if (ts1.length > ts2.length)
 					d = DistMethods.calcDistEuclidean(ts1, ts2);
 				else
 					d = DistMethods.calcDistEuclidean(ts2, ts1);
-
-				// DTW dtw = new DTW(ts1, ts2);
-				// d = dtw.warpingDistance;
 
 				dt[i][j] = d;
 			}
@@ -157,43 +148,17 @@ public class PatternsProcess {
 		return allPatterns;
 	}
 
-	// private ArrayList<String[]> findCluster(Cluster cluster, double cutDist,
-	// int minPatternPerCls) {
-	//
-	// ArrayList<String[]> clusterTSIdx = new ArrayList<String[]>();
-	//
-	// if (cluster.getDistance() != null) {
-	// if (cluster.getDistanceValue() > cutDist) {
-	// if (cluster.getChildren().size() > 0) {
-	// clusterTSIdx.addAll(findCluster(cluster.getChildren()
-	// .get(0), cutDist, minPatternPerCls));
-	// clusterTSIdx.addAll(findCluster(cluster.getChildren()
-	// .get(1), cutDist, minPatternPerCls));
-	// }
-	// } else {
-	// String[] idxes = cluster.getName().split("&");
-	// if (idxes.length > minPatternPerCls) {
-	// clusterTSIdx.add(idxes);
-	// }
-	// }
-	// }
-	//
-	// return clusterTSIdx;
-	// }
-
 	private ArrayList<String[]> findCluster(Cluster cluster, double cutDist, int minPatternPerCls) {
 
 		ArrayList<String[]> clusterTSIdx = new ArrayList<String[]>();
 
 		if (cluster.getDistance() != null) {
-			// if (cluster.getDistance() > cutDist) {
 			if (cluster.getDistanceValue() > cutDist) {
 				if (cluster.getChildren().size() > 0) {
 					clusterTSIdx.addAll(findCluster(cluster.getChildren().get(0), cutDist, minPatternPerCls));
 					clusterTSIdx.addAll(findCluster(cluster.getChildren().get(1), cutDist, minPatternPerCls));
 				}
 			} else {
-				// String[] idxes = cluster.getName().split("&");
 				ArrayList<String> itemsInCluster = getNameInCluster(cluster);
 				String[] idxes = itemsInCluster.toArray(new String[itemsInCluster.size()]);
 				if (idxes.length > minPatternPerCls) {
@@ -212,9 +177,6 @@ public class PatternsProcess {
 		if (cluster.isLeaf()) {
 			nodeName = cluster.getName();
 			itemsInCluster.add(nodeName);
-		} else {
-			// String[] clusterName = cluster.getName().split("#");
-			// nodeName = clusterName[1];
 		}
 
 		for (Cluster child : cluster.getChildren()) {
