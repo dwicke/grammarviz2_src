@@ -575,10 +575,11 @@ public class GrammarVizView implements Observer, ActionListener {
     discretizePane.add(discretizeButton, "");
 
 
-    //  RPM train button and test buttons
+    //  RPM train iterations field
     rpmIterationLabel = new JLabel("Iterations");
     rpmIterationeField = new JTextField(String.valueOf(this.controller.getSession().rpmNumberOfIterations), 2);
     rpmIterationeField.setMinimumSize(rpmIterationeField.getPreferredSize());
+    //  RPM train button and test buttons
     trainButton = new JButton("Train");
     trainButton.setMnemonic('R');
     trainButton.setActionCommand(TRAIN_MODEL);
@@ -916,7 +917,7 @@ public class GrammarVizView implements Observer, ActionListener {
             rpmPanel.repaint();
             saxParametersPane.revalidate();
             saxParametersPane.repaint();
-            rpmRepPanel.updateRPMStatistics();
+            rpmRepPanel.updateRPMRepPatterns();
             rpmRepPanel.resetPanel();
           }
         };

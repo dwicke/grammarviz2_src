@@ -21,6 +21,8 @@ import java.util.List;
 
 /**
  * Created by dwicke on 4/14/17.
+ *
+ * A command line interface for using RPM with GrammarViz.
  */
 public class GrammarVizRPM {
 
@@ -34,7 +36,7 @@ public class GrammarVizRPM {
     final static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 
-
+    // Setup command line arguments
     @Parameter
     public List<String> parameters = new ArrayList<String>();
 
@@ -54,17 +56,24 @@ public class GrammarVizRPM {
     @Parameter(names = { "--wsize", "-s" }, description = "The DTW window size default is 10")
     int windowSize = 10;
 
+    /**
+     * The main function used to run GrammarViz/RPM from the command line, it takes in an argument list
+     * and runs RPM using those parameters.
+     *
+     * @param args the command line arguments.
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
 
-
-
+        // Setup GrammarViz/RPM commandline system
         GrammarVizRPM rpmCLI = new GrammarVizRPM();
+        // Handle command line arguments
         JCommander jct = new JCommander(rpmCLI, args);
 
-        if (0 == args.length) {
-            jct.usage();
+        if (0 == args.length) { // If there are no arguments
+            jct.usage(); // tell the user how to use this tool
         }
-        else {
+        else { // Else run RPM using the command line arguments
             RPMHandler rpmHandler = new RPMHandler();
             double[][] data = rpmCLI.loadDataPrivate("0", rpmCLI.trainDataFilename);
             rpmHandler.setNumberOfIterations(rpmCLI.numIterations);
@@ -96,11 +105,23 @@ public class GrammarVizRPM {
         }
     }
 
+    /**
+     * Logging function.
+     *
+     * @param message the message to be logged.
+     */
     private void log(String message) {
         LOGGER.debug(message);
     }
 
 
+    /**
+     * Loads time series data from file for use with GrammarViz/RPM.
+     *
+     * @param limitStr limits how many lines can be read in from the file.
+     * @param fileName the path to the time series data.
+     * @return the time series data.
+     */
     double[][] loadDataPrivate(String limitStr, String fileName) {
         // check if everything is ready
         if ((null == fileName) || fileName.isEmpty()) {

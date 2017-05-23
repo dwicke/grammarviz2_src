@@ -29,6 +29,9 @@ public class GetRulesFromGI {
 	int windowSize;
 	double[] concatenatedTS;
 
+	/**
+	 * Constructor, sets defaults (null).
+	 */
 	public GetRulesFromGI() {
 		chartData = null;
 		startingPositions = null;
@@ -36,6 +39,23 @@ public class GetRulesFromGI {
 		concatenatedTS = null;
 	}
 
+	/**
+	 * Returns a refined set of patterns that represent the grammar of the time series data.
+	 *
+	 * @param windowSize the window size.
+	 * @param paaSize the paa size.
+	 * @param alphabetSize the alphabet size.
+	 * @param numerosityReductionStrategy the numerosity reduction strategy.
+	 * @param concatenatedTS the concatenated time series data.
+	 * @param giMethod the grammar induction method.
+	 * @param startingPositions the parting positions of time series in concatenatedTS
+	 * @param rpFrequencyTPer the repeated pattern frequency threshold.
+	 * @param maxRPNum
+	 * @param overlapTPer
+	 * @param isCoverageFre
+	 * @param pSimilarity
+	 * @return the grammars of the time series data.
+	 */
 	public ArrayList<int[]> getGrammars(int windowSize, int paaSize, int alphabetSize,
 										NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
 										GrammarInductionMethod giMethod, int[] startingPositions, double rpFrequencyTPer, int maxRPNum,
@@ -76,56 +96,6 @@ public class GetRulesFromGI {
 			// }
 
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return patterns;
-	}
-
-	public ArrayList<int[]> getGrammars(int windowSize, int paaSize, int alphabetSize,
-										NumerosityReductionStrategy numerosityReductionStrategy, double[] concatenatedTS,
-										GrammarInductionMethod giMethod, int[] startingPositions) {
-		this.startingPositions = startingPositions;
-		// this.orignalLen = orignalLen;
-		this.windowSize = windowSize;
-		this.giMethod = giMethod;
-		this.concatenatedTS = concatenatedTS;
-		double rpFrequencyTPer = 0.2;
-		int maxRPNum = 50;
-		double overlapTPer = 0.5;
-
-		ArrayList<int[]> patterns = null;
-		try {
-
-			// NumerosityReductionStrategy strategy =
-			// numerosityReductionStrategy;
-			// // Get all rules from Sequitur
-			// processData(windowSize, paaSize, alphabetSize, strategy,
-			// concatenatedTS, giMethod, startingPositions);
-			//
-			// // if (isParameterGood(startingPositions)) {
-			// int originalTSNum = startingPositions.length + 1;
-			// int realRepeatedThreshold = (int) (originalTSNum *
-			// rpFrequencyTPer);
-			// if (realRepeatedThreshold < 1)
-			// realRepeatedThreshold = 1;
-			// // Put all patterns together, get repeated patterns by their
-			// // start
-			// // position. Prune the repeated pattern less than a threshold.
-			//
-			// ArrayList<RepeatedPattern> allRepeatedPatterns =
-			// getRepeatedPatterns(
-			// realRepeatedThreshold, maxRPNum, overlapTPer, startingPositions);
-			//
-			// if (allRepeatedPatterns.size() > 0) {
-			// patterns = findRepeatedPatterns(allRepeatedPatterns,
-			// startingPositions);
-			// } else {
-			// patterns = null;
-			// }
-			// allRepeatedPatterns.clear();
-			// }
-
-		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return patterns;
@@ -573,23 +543,14 @@ public class GetRulesFromGI {
 
 	/**
 	 * Process data with Sequitur. Populate and broadcast ChartData object.
-	 * 
-	 * @param algorithm
-	 *            the algorithm, 0 Sequitur, 1 RE-PAIR.
-	 * @param useSlidingWindow
-	 *            The use sliding window parameter.
-	 * @param numerosityReductionStrategy
-	 *            The numerosity reduction strategy.
-	 * @param windowSize
-	 *            The SAX sliding window size.
-	 * @param paaSize
-	 *            The SAX PAA size.
-	 * @param alphabetSize
-	 *            The SAX alphabet size.
-	 * @param normalizationThreshold
-	 *            The normalization threshold.
-	 * @param grammarOutputFileName
-	 *            The file name to where save the grammar.
+	 *
+	 * @param windowSize The SAX sliding window size.
+	 * @param paaSize The SAX PAA size.
+	 * @param alphabetSize The SAX alphabet size.
+	 * @param numerosityReductionStrategy The numerosity reduction strategy.
+	 * @param concatenatedTS the concatenated time series data.
+	 * @param giMethod the grammar induction method to be used.
+	 * @param startingPositions the list of starting position for the time series in the concatenatedTS.
 	 * @throws IOException
 	 */
 	public void processData(int windowSize, int paaSize, int alphabetSize,

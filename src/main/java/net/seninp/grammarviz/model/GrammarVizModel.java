@@ -419,6 +419,11 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  /**
+   * GUI interface for training an RPM model on loaded time series data, runs in the background.
+   *
+   * @param numberOfIterations the maximum number of iterations RPM will run for.
+   */
   public synchronized void RPMTrain(int numberOfIterations) {
     if(this.rpmHandler == null) {
       this.rpmHandler = new RPMHandler();
@@ -446,6 +451,11 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  /**
+   * GUI interface for saving RPM models to file.
+   *
+   * @param filename the path for where the model is to be save.
+   */
   public synchronized void RPMSaveModel(String filename) {
     this.log("Testing Model using " + filename + "...");
     try {
@@ -456,6 +466,12 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  /**
+   * GUI function that loads the training time series data from file when an existing model is loaded from file.
+   *
+   * @param filename the path to the training time series data.
+   * @return true if the file was found and loaded, false otherwise.
+   */
   private boolean loadTrainingDataForModel(String filename) {
     String tempDataFileName = this.dataFileName;
     this.dataFileName = filename;
@@ -472,6 +488,9 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  /**
+   * GUI interface for loading an RPM model from file.
+   */
   public synchronized void RPMLoadModel() {
     this.log("Loading Model from " + this.dataFileName + "...");
     if (this.rpmHandler == null) {
@@ -506,6 +525,12 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  /**
+   * GUI function that loads training time series data when loading a model in the event that the original path
+   * found in the model does not point to the data.
+   *
+   * @param filename the path to the training time series data.
+   */
   public synchronized void RPMLoadMissingTrain(String filename) {
     if(this.loadTrainingDataForModel(filename)) {
       setChanged();
@@ -515,6 +540,11 @@ public class GrammarVizModel extends Observable implements Observer {
     }
   }
 
+  /**
+   * GUI interface that tests the trained RPM model on testing time series data.
+   *
+   * @param filename the path to the testing time series data.
+   */
   public synchronized void RPMTest(String filename) {
     this.log("Testing Model using " + filename + "...");
     try {

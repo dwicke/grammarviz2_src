@@ -116,6 +116,11 @@ public class GrammarVizController extends Observable implements ActionListener {
     return loadDataActionListener;
   }
 
+  /**
+   * Provides an action listener for training an RPM model.
+   *
+   * @return RPM training action listener.
+   */
   public ActionListener getRPMTrainListener() {
     ActionListener RPMTrainListener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -126,6 +131,11 @@ public class GrammarVizController extends Observable implements ActionListener {
     return RPMTrainListener;
   }
 
+  /**
+   * Provides an action listener for testing an RPM model.
+   *
+   * @return RPM testing action listener.
+   */
   public ActionListener getRPMTestListener() {
     ActionListener RPMTestListener = new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -144,6 +154,11 @@ public class GrammarVizController extends Observable implements ActionListener {
     return RPMTestListener;
   }
 
+  /**
+   * Provides an action listener for loading an RPM model.
+   *
+   * @return RPM loading action listener.
+   */
   public ActionListener getRPMLoadListener() {
     ActionListener rpmLoadListener = new ActionListener() {
       @Override
@@ -155,6 +170,11 @@ public class GrammarVizController extends Observable implements ActionListener {
     return rpmLoadListener;
   }
 
+  /**
+   * Provides an action listener for handling the loading of missing training data when loading an RPM model.
+   *
+   * @return RPM load missing training data action listener.
+   */
   public ActionListener getRPMLoadMissingTrainListener() {
     ActionListener rpmLoadMissingTrainListener = new ActionListener() {
       @Override
@@ -172,6 +192,11 @@ public class GrammarVizController extends Observable implements ActionListener {
     return rpmLoadMissingTrainListener;
   }
 
+  /**
+   * Provides an action listener for saving an RPM model.
+   *
+   * @return RPM saving action listener.
+   */
   public ActionListener getRPMSaveListener() {
     ActionListener rpmSaveListener = new ActionListener() {
       @Override

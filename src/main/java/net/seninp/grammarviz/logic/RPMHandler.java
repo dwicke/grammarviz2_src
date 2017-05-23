@@ -17,6 +17,8 @@ import java.util.Observable;
 
 /**
  * Created by David Fleming on 1/24/17.
+ *
+ * A class to handle the state of RPM for GrammarViz.
  */
 public class RPMHandler extends Observable implements Runnable {
 
@@ -30,18 +32,32 @@ public class RPMHandler extends Observable implements Runnable {
     private TSPattern[] finalPatterns;
     private int numberOfIterations;
 
+    /**
+     * Constructor, creates all internal references and sets up defaults.
+     */
     public RPMHandler() {
         super();
         this.RPM = new PSDirectTransformAllClass();
         this.numberOfIterations = PSDirectTransformAllClass.DEFAULT_NUMBER_OF_ITERATIONS;
     }
 
+    /**
+     * Trains RPM and pulls out final patterns from the results.
+     *
+     * @param filename the path for the training data, used when saving the model.
+     * @param data the time series data.
+     * @param labels the labels for the time series data, must be a one-to-one mapping.
+     * @throws java.io.IOException
+     */
     public synchronized void RPMTrain(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.trainingResults = this.RPM.RPMTrain(filename, data, labels, PSDirectTransformAllClass.DEFAULT_STRATEGY,
                 this.numberOfIterations);
         this.finalPatterns = this.trainingResults.finalPatterns();
     }
 
+    /**
+     * Runs training on a background thread, notifying GrammarViz upon completion.
+     */
     @Override
     public void run() {
         this.log("Starting RPM Training in Background");
@@ -57,11 +73,24 @@ public class RPMHandler extends Observable implements Runnable {
         }
     }
 
+    /**
+     * Tests the data against the trained model reporting the statistics.
+     * @param filename the filename for the testing data.
+     * @param data the time series testing data.
+     * @param labels the labels for the time series testing data, must be a one-to-one mapping.
+     * @throws java.io.IOException
+     */
     public synchronized void RPMTestData(String filename, double[][] data, String[] labels) throws java.io.IOException {
         this.testingLabels = labels;
         this.testingResults = this.RPM.RPMTestData(filename, data, labels);
     }
 
+    /**
+     * Loads an existing RPM trained model from file.
+     *
+     * @param filename the path to the saved model.
+     * @throws Exception
+     */
     public synchronized void RPMLoadModel(String filename) throws Exception {
         RPMTrainedData rpmTrainedData = null;
         //try {
@@ -87,6 +116,11 @@ public class RPMHandler extends Observable implements Runnable {
 
     }
 
+    /**
+     * Saves an RPM trained model to file.
+     *
+     * @param filename the path for where to save the model.
+     */
     public synchronized void RPMSaveModel(String filename) {
         try {
             FileOutputStream saveFile = new FileOutputStream(filename);
@@ -101,10 +135,20 @@ public class RPMHandler extends Observable implements Runnable {
 
     }
 
+    /**
+     * Get the representative patterns from the trained model.
+     *
+     * @return the representative patterns.
+     */
     public synchronized TSPattern[] getRepresentativePatterns() {
         return this.finalPatterns;
     }
 
+    /**
+     * Parses the results from the testing phase, generating a label and accuracy ratio array.
+     * output: [["Label", "Number of Wrongly labeled/Total number labeled"]]
+     * @return the results from the testing phase.
+     */
     public synchronized String[][] getResults() {
         if(this.testingResults == null)
             return null;
@@ -139,60 +183,132 @@ public class RPMHandler extends Observable implements Runnable {
         return output;
     }
 
+    /**
+     * Get the windows size as found by RPM.
+     *
+     * @return the window size.
+     */
     public synchronized int getWindowSize() {
         return this.trainingResults.windowSize;
     }
 
+    /**
+     * Get the PAA size as found by RPM.
+     *
+     * @return the PAA size.
+     */
     public synchronized int getPaa() {
         return this.trainingResults.paa;
     }
 
+    /**
+     * Get the alphabet size as found by RPM.
+     *
+     * @return the alphabet size.
+     */
     public synchronized int getAlphabet() {
         return this.trainingResults.alphabet;
     }
 
+    /**
+     * Get the labels from the training data.
+     *
+     * @return the labels from the training data.
+     */
     public synchronized String[] getTrainedLabels() {
         return this.trainingLabels;
     }
 
+    /**
+     * Get the labels from the testing data.
+     *
+     * @return the labels from the testing data.
+     */
     public synchronized String[] getTestingLabels() {
         return this.testingLabels;
     }
 
+    /**
+     * Set the maximum number of iterations RPM will do during training.
+     *
+     * @param numberOfIterations the maximum number of iterations.
+     */
     public synchronized void setNumberOfIterations(int numberOfIterations) { this.numberOfIterations = numberOfIterations; }
 
+    /**
+     * Get the maximum number of iterations RPM will do during training.
+     *
+     * @return the maximum number of iterations.
+     */
     public synchronized int getNumberOfIterations() {return this.numberOfIterations; }
 
-
+    /**
+     * Get the path to the training data.
+     *
+     * @return the path to the training data.
+     */
     public synchronized String getTrainingFilename() {
         return trainingFilename;
     }
 
+    /**
+     * Set the path to the training data.
+     *
+     * @param trainingFilename the path to the training data.
+     */
     public synchronized void setTrainingFilename(String trainingFilename) {
         this.trainingFilename = trainingFilename;
     }
 
+    /**
+     * Get the training time series data.
+     *
+     * @return the training time series data.
+     */
     public synchronized double[][] getTrainingData() {
         return trainingData;
     }
 
+    /**
+     * Set the training time series data.
+     *
+     * @param trainingData the training time series data.
+     */
     public synchronized void setTrainingData(double[][] trainingData) {
         this.trainingData = trainingData;
     }
 
+    /**
+     * Get the training time series labels.
+     *
+     * @return the training time series labels.
+     */
     public synchronized String[] getTrainingLabels() {
         return trainingLabels;
     }
 
+    /**
+     * Set the training time series labels.
+     *
+     * @param trainingLabels the training time series labels.
+     */
     public synchronized void setTrainingLabels(String[] trainingLabels) {
         this.trainingLabels = trainingLabels;
     }
 
+    /**
+     * Forces a reload of the training model by reconverting the data and loading the model.
+     */
     public synchronized void forceRPMModelReload() {
         this.trainingResults.trainData = this.RPM.convertGrammarVizData(this.trainingData, this.trainingLabels);
         this.RPM.loadRPMTrain(this.trainingResults);
     }
 
+    /**
+     * Formats a string with the results from testing in the format provided by getResults().
+     *
+     * @return the results from testing.
+     */
     @Override
     public synchronized String toString() {
         StringBuilder output = new StringBuilder();
@@ -205,6 +321,10 @@ public class RPMHandler extends Observable implements Runnable {
         return output.toString();
     }
 
+    /**
+     * Uses GrammarViz's message passing to relay status updates to the GUI.
+     * @param message
+     */
     private void log(String message) {
         this.setChanged();
         notifyObservers(new GrammarVizMessage(GrammarVizMessage.STATUS_MESSAGE, "RPM Handler: " + message));

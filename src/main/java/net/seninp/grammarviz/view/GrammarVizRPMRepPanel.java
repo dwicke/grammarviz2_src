@@ -20,6 +20,8 @@ import java.util.Arrays;
 
 /**
  * Created by David Fleming on 1/24/17.
+ *
+ * This class handles the display of the representative patterns found by RPM in the GrammarViz GUI.
  */
 public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListener {
 
@@ -44,6 +46,9 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
     //
     private static final Logger LOGGER = LoggerFactory.getLogger(GrammarRulesPanel.class);
 
+    /**
+     * Creates the panel and table within the panel for displaying the representative patterns found by RPM.
+     */
     public GrammarVizRPMRepPanel() {
         super();
         this.RPMRepTableModel = new RPMRepTableModel();
@@ -104,6 +109,9 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
         this.RPMRepPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
+    /**
+     * Resets the panel.
+     */
     public void resetPanel() {
         // cleanup all the content
         this.removeAll();
@@ -112,10 +120,25 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
         this.repaint();
     }
 
+    /**
+     * Get the table model.
+     *
+     * @return the table model.
+     */
     public RPMRepTableModel getRPMRepTableModel() {return this.RPMRepTableModel; }
 
+    /**
+     * Get the RPM table.
+     *
+     * @return the RPM table.
+     */
     public JTable getRPMRepTable() {return this.RPMRepTable; }
 
+    /**
+     * Updates the table values when values change.
+     *
+     * @param arg
+     */
     @Override
     public void valueChanged(ListSelectionEvent arg) {
         if (!arg.getValueIsAdjusting() && this.acceptListEvents) {
@@ -133,13 +156,19 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
 
     }
 
-    public void updateRPMStatistics() {
+    /**
+     * Updates the table by populating it with the representative patterns.
+     */
+    public void updateRPMRepPatterns() {
         this.acceptListEvents = false;
         this.RPMRepTableModel.update(this.session.rpmHandler.getRepresentativePatterns());
         this.RPMRepTable.packAll();
         this.acceptListEvents = true;
     }
 
+    /**
+     * Clears the table.
+     */
     public void clear() {
         this.acceptListEvents = false;
         this.removeAll();
@@ -150,5 +179,10 @@ public class GrammarVizRPMRepPanel  extends JPanel implements ListSelectionListe
         this.acceptListEvents = true;
     }
 
+    /**
+     * Set the user session.
+     *
+     * @param session the user session.
+     */
     public void setResults(UserSession session) {this.session = session; }
 }

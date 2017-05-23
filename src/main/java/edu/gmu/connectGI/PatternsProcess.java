@@ -10,7 +10,20 @@ import net.seninp.gi.logic.RuleInterval;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * This class provides the primary functions for refining patterns found in the time series data. In the RPM papers
+ * this is Algorithm 1 Finding repeated patterns.
+ */
 public class PatternsProcess {
+
+	/**
+	 * Refines the patterns using clustering from seninp.
+	 * @param origTS the orginial time series where the patterns were found.
+	 * @param rp a seninp package for managing repeating patterns.
+	 * @param startingPositions the start position for the patterns.
+	 * @param isCoverageFre are the patterns coverage free.
+	 * @return an ArrayList containing int arrays that store, the start position, the length, and the frequency.
+	 */
 	public ArrayList<int[]> refinePatternsByClustering(double[] origTS, RepeatedPattern rp, int[] startingPositions,
 			Boolean isCoverageFre) {
 
@@ -74,6 +87,13 @@ public class PatternsProcess {
 		return getRepresentativeOfGroup(clusterTSIdx, arrPos, dt, startingPositions, isCoverageFre);
 	}
 
+	/**
+	 * Determines if the rule is in another time series.
+	 * @param arrPosThis the Rule Intervals which are all rules found.
+	 * @param saxPos The rule interval to look for in the other rules data
+	 * @param startingPositions the start position for the patterns in the concatenated time series data.
+	 * @return whether the rule matches other time series data.
+	 */
 	public static Boolean isFromDifferenTS(ArrayList<RuleInterval> arrPosThis, RuleInterval saxPos,
                                            int[] startingPositions) {
 
@@ -90,6 +110,16 @@ public class PatternsProcess {
 		return true;
 	}
 
+	/**
+	 * Returns the representative patterns of a group by usering the clustering results and selecting the best patterns.
+	 * @param clusterTSIdx the cluster index for the time series.
+	 * @param arrPos the rule intervals.
+	 * @param dt the distance found during clustering.
+	 * @param startingPositions the starting position for the patterns in the concatenated time series data.
+	 * @param isCoverageFre is the data coverage free.
+	 * @return a list of interger arrays that store, the start position, the length, and the frequency of the best
+	 * 				representative patterns for the group.
+	 */
 	private ArrayList<int[]> getRepresentativeOfGroup(ArrayList<String[]> clusterTSIdx, ArrayList<RuleInterval> arrPos,
 			double dt[][], int[] startingPositions, Boolean isCoverageFre) {
 		ArrayList<int[]> allPatterns = new ArrayList<int[]>();
@@ -148,6 +178,15 @@ public class PatternsProcess {
 		return allPatterns;
 	}
 
+	/**
+	 * Recursively descends through the cluster pulling in clusters that meet the minimum set by distance and the
+	 * minimum number of patterns per cluster.
+	 *
+	 * @param cluster the cluster to be parsed.
+	 * @param cutDist the minimum distance of the cluster.
+	 * @param minPatternPerCls the minimum number of patterns in the cluster.
+	 * @return reduced pattern cluster set.
+	 */
 	private ArrayList<String[]> findCluster(Cluster cluster, double cutDist, int minPatternPerCls) {
 
 		ArrayList<String[]> clusterTSIdx = new ArrayList<String[]>();
@@ -170,6 +209,12 @@ public class PatternsProcess {
 		return clusterTSIdx;
 	}
 
+	/**
+	 * Recursively finds the name of patterns in a cluster by traversing the cluster tree.
+	 *
+	 * @param cluster the cluster to parse.
+	 * @return all the names in the cluster.
+	 */
 	private ArrayList<String> getNameInCluster(Cluster cluster) {
 		ArrayList<String> itemsInCluster = new ArrayList<String>();
 
