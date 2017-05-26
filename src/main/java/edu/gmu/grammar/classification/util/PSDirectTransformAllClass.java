@@ -528,9 +528,9 @@ public class PSDirectTransformAllClass {
 	}
 
 	/**
-	 *
-	 * @param strategy
-	 * @return
+	 * This is the primary function that runs when RPM is being trained. It contains most of the RPM algorithm.
+	 * @param strategy the numerosity reduction strategy.
+	 * @return the best representative patterns.
 	 */
 	private BestSelectedPatterns[] sample(
             NumerosityReductionStrategy strategy) {
@@ -653,9 +653,9 @@ public class PSDirectTransformAllClass {
 	}
 
 	/**
-	 *
-	 * @param errorValue
-	 * @param point
+	 * Updates the best representative patterns during the training phase of RPM.
+	 * @param errorValue the current error values.
+	 * @param point the point in the data.
 	 */
 	private void updateBest(double[] errorValue, Point point) {
 
